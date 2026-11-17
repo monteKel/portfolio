@@ -19,7 +19,8 @@ import kel480w from '../assets/portrait/kel-480.webp?url';
           <li>{t.hero.lines[0]}</li>
           <li class="hero__status">
             <span><span class="live" aria-hidden="true"></span>{t.hero.lines[1]}</span>
-            <a class="cta" href="#contact" data-scramble>{t.hero.cta}</a>
+            {/* com JS abre o email (endereço montado no clique, fora do HTML); sem JS leva ao contato */}
+            <a class="cta" href="#contact" data-mailto data-subject={t.contact.subject} data-scramble>{t.hero.cta}</a>
           </li>
         </ul>
       </div>

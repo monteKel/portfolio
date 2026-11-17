@@ -124,7 +124,7 @@ export function start(): void {
     }
   }
 
-  $$<HTMLAnchorElement>('a[href^="#"]').forEach((a) => {
+  $$<HTMLAnchorElement>('a[href^="#"]:not([data-mailto])').forEach((a) => {
     a.addEventListener('click', (e) => {
       const id = a.getAttribute('href')!.slice(1);
       if (!id || !document.getElementById(id)) return;
@@ -218,6 +218,8 @@ export function start(): void {
       const k = clamp01((p - 0.48) / 0.52);
       // escala exponencial: parece aproximação, não "inflar"
       arrive.style.transform = k >= 1 ? 'none' : `scale(${Math.pow(0.04, 1 - k).toFixed(4)})`;
+      // chegou: libera o corte da primeira tela (CSS) para o resto da coluna aparecer ao rolar
+      arrive.style.clipPath = k >= 1 ? 'none' : '';
       arrive.style.opacity = String(smooth(k * 1.6));
     }
     if (!bhApi || !L || !bhWrap) return;
@@ -502,6 +504,28 @@ export function start(): void {
       setTimeout(() => (copyBtn.textContent = label), 2000);
     });
   }
+
+  // "fale comigo": abre o app de email já endereçado. Sem app de email configurado o navegador
+  // não faz nada; se a página não perder o foco, cai no bloco de contato com o endereço à mostra.
+  $$<HTMLAnchorElement>('[data-mailto]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      let left = false;
+      const away = () => (left = true);
+      window.addEventListener('blur', away, { once: true });
+      document.addEventListener('visibilitychange', away, { once: true });
+      const subject = a.dataset['subject'];
+      window.location.href =
+        `mailto:${revealEmail()}` + (subject ? `?subject=${encodeURIComponent(subject)}` : '');
+      setTimeout(() => {
+        window.removeEventListener('blur', away);
+        document.removeEventListener('visibilitychange', away);
+        if (left) return;
+        if (showBtn && !showBtn.hidden) showBtn.click();
+        goTo('contact');
+      }, 1500);
+    });
+  });
 
   // ---------- barra de status ----------
   // abas = blocos, com o mesmo número do título de cada um (0 = topo)

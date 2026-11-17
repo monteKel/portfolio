@@ -52,6 +52,8 @@ export interface Dict {
     copy: string;
     copied: string;
     copyFailed: string;
+    /** assunto do email aberto pelo botão "fale comigo" */
+    subject: string;
     links: Link[];
   };
   projects: { title: string; items: Project[]; code: string; todoLink: string };
@@ -203,6 +205,7 @@ const en: Dict = {
     copy: 'copy',
     copied: 'copied',
     copyFailed: 'copy blocked, select the text',
+    subject: 'Saw your portfolio',
     links: [
       { label: 'github', href: 'https://github.com/monteKel' },
       { label: 'linkedin', href: 'https://www.linkedin.com/in/kelvemcartaxo' },
@@ -373,6 +376,7 @@ const pt: Dict = {
     copy: 'copiar',
     copied: 'copiado',
     copyFailed: 'cópia bloqueada, selecione o texto',
+    subject: 'Vi seu portfólio',
     links: [
       { label: 'github', href: 'https://github.com/monteKel' },
       { label: 'linkedin', href: 'https://www.linkedin.com/in/kelvemcartaxo' },
@@ -519,6 +523,7 @@ const ja: Dict = {
     copy: 'コピー',
     copied: 'コピーしました',
     copyFailed: 'コピーできませんでした。テキストを選択してください',
+    subject: 'ポートフォリオを拝見しました',
     links: [
       { label: 'github', href: 'https://github.com/monteKel' },
       { label: 'linkedin', href: 'https://www.linkedin.com/in/kelvemcartaxo' },
