@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from './Hero.astro';
+import Projects from './Projects.astro';
+import Lab from './Lab.astro';
+import StatusBar from './StatusBar.astro';
+import Footer from './Footer.astro';
+import Gate from './Gate.astro';
+import { content, type Lang } from '../data/content';
+interface Props { lang: Lang; preload?: string[] }
+const { lang, preload = [] } = Astro.props;
+const t = content[lang];
+---
+<Base lang={lang} title={t.meta.title} description={t.meta.description} preload={preload}>
+  <Gate />
+  <a class="skip" href="#about">{t.skip}</a>
+  <div class="bh" aria-hidden="true"><canvas id="bh"></canvas></div>
+  <main id="main">
+    <Hero t={t} />
+    <Projects t={t} />
+    <Lab t={t} />
+  </main>
+  <Footer t={t} />
+  <canvas class="trail" aria-hidden="true"></canvas>
+  <StatusBar t={t} lang={lang} />
+</Base>

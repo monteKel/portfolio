@@ -1,0 +1,18 @@
+---
+// Tela de idioma (só na 1ª visita; o /lang-gate.js decide). Escrita em todos os idiomas de propósito.
+// Sem JS ela nunca aparece; os links funcionam sozinhos de qualquer forma.
+import { LANGS } from '../data/content';
+---
+<div class="gate" data-gate role="dialog" aria-modal="true" aria-labelledby="gate-title">
+  <div class="gate__box">
+    <p class="gate__prompt" aria-hidden="true">kel@orbit:~$ <span class="gate__cmd">locale --pick</span><span class="gate__cursor"></span></p>
+    <h2 class="gate__title" id="gate-title">
+      {LANGS.map((l, i) => <span class={i ? 'gate__or' : ''} lang={l.hreflang}>{l.pick}</span>)}
+    </h2>
+    <ul class="gate__opts">
+      {LANGS.map((l) => (
+        <li><a class="gate__opt" href={l.path} hreflang={l.hreflang} lang={l.hreflang} data-lang-pick={l.code}>{l.name} <span class="gate__code">{l.hreflang.toLowerCase()}</span></a></li>
+      ))}
+    </ul>
+  </div>
+</div>

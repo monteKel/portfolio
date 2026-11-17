@@ -1,0 +1,83 @@
+---
+import type { Dict } from '../data/content';
+import Pane from './Pane.astro';
+interface Props { t: Dict }
+const { t } = Astro.props;
+import kel240a from '../assets/portrait/kel-240.avif?url';
+import kel480a from '../assets/portrait/kel-480.avif?url';
+import kel240w from '../assets/portrait/kel-240.webp?url';
+import kel480w from '../assets/portrait/kel-480.webp?url';
+---
+<section class="hero" id="home" aria-labelledby="home-title">
+  <div class="hero__stage" data-stage>
+    <div class="hero__intro">
+      <p class="hero__top" aria-hidden="true">kel@orbit:~$ <span class="cursor"></span></p>
+      <div class="hero__inner">
+        <h1 class="hero__name" id="home-title" data-hero-name>{t.hero.name}</h1>
+        <p class="hero__role" data-hero-fade>{t.hero.role}</p>
+        <ul class="hero__lines" data-hero-fade>
+          <li>{t.hero.lines[0]}</li>
+          <li class="hero__status">
+            <span><span class="live" aria-hidden="true"></span>{t.hero.lines[1]}</span>
+            <a class="cta" href="#contact" data-scramble>{t.hero.cta}</a>
+          </li>
+        </ul>
+      </div>
+      <p class="hero__hint" aria-hidden="true">{t.hero.hint} v</p>
+    </div>
+
+    <div class="arrive" data-arrive>
+      <div class="panes panes--overview">
+        <Pane id="about" title={t.about.title} index={1} class="pane--about">
+          <div class="about">
+            <div>
+              {t.about.lines.map((l) => <p class="about__line">{l}</p>)}
+              <dl class="facts">
+                {t.about.facts.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+              </dl>
+            </div>
+            <picture class="portrait">
+              <source type="image/avif" srcset={`${kel240a} 240w, ${kel480a} 480w`} sizes="11rem" />
+              <img src={kel480w} srcset={`${kel240w} 240w, ${kel480w} 480w`} sizes="11rem" width="480" height="600" alt={t.about.portrait} decoding="async" />
+            </picture>
+          </div>
+        </Pane>
+
+        <Pane id="now" title={t.now.title} index={2} class="pane--now">
+          <ul class="now">
+            {t.now.items.map((i) => <li><span class="now__tag">{i.tag}</span><span>{i.text}</span></li>)}
+          </ul>
+        </Pane>
+
+        <Pane id="stack" title={t.stack.title} index={3} class="pane--stack">
+          <ul class="tags tags--big">
+            {t.stack.items.map((s) => <li>{s}</li>)}
+          </ul>
+        </Pane>
+
+        <Pane id="contact" title={t.contact.title} index={4} class="pane--contact">
+          <p class="muted">{t.contact.text}</p>
+          <div class="email">
+            <span class="email__text" data-email-text aria-live="polite">********@*****.***</span>
+            <span class="email__actions">
+              <button type="button" class="btn btn--primary" data-email-show data-scramble>{t.contact.show}</button>
+              <button type="button" class="btn" data-email-copy data-copied={t.contact.copied} data-failed={t.contact.copyFailed} hidden>{t.contact.copy}</button>
+            </span>
+          </div>
+          <ul class="links">
+            {t.contact.links.map((l) => (
+              <li>
+                <span>{l.label}</span>
+                {l.href ? (
+                  <a href={l.href} target="_blank" rel="noopener noreferrer" data-scramble>{l.text ?? l.href.replace(/^https?:\/\/(www\.)?/, '')}</a>
+                ) : (
+                  <span class="todo">TODO(kel) link</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Pane>
+      </div>
+    </div>
+  </div>
+</section>

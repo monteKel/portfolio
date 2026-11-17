@@ -1,0 +1,3 @@
+/* sem JavaScript: nada de animação de chegada, tudo visível em ordem */
+.hero__intro { position: relative !important; }
+.arrive { opacity: 1 !important; transform: none !important; }

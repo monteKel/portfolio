@@ -1,0 +1,18 @@
+---
+import type { Dict } from '../data/content';
+interface Props { t: Dict }
+const { t } = Astro.props;
+const mark = String.raw`
+ _  __  _____  _
+| |/ / | ____|| |
+| ' /  |  _|  | |
+| . \  | |___ | |___
+|_|\_\ |_____||_____|`.replace(/^\n/, '');
+---
+<footer class="footer">
+  <pre class="footer__mark" aria-hidden="true">{mark}</pre>
+  <div class="footer__row">
+    <span>{t.footer.rights}</span>
+    <span class="footer__about"><span>{t.footer.built}</span> <span>{t.footer.privacy}</span></span>
+  </div>
+</footer>

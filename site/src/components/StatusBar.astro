@@ -1,0 +1,27 @@
+---
+import { LANGS, type Dict, type Lang } from '../data/content';
+interface Props { t: Dict; lang: Lang }
+const { t, lang } = Astro.props;
+---
+<nav class="status" aria-label="Sections">
+  <span class="status__session" aria-hidden="true">kel</span>
+  <ul class="status__tabs">
+    {t.tabs.map((tab, i) => (
+      <li><a href={`#${tab.id}`} data-tab={tab.id}>{i}:{tab.label}</a></li>
+    ))}
+  </ul>
+  <span class="status__section" data-status-section aria-hidden="true">0:{t.tabs[0]!.label}</span>
+  <span class="status__right">
+    <button type="button" class="status__motion" data-motion aria-pressed="false" aria-label={t.motion.aria} data-pause={t.motion.pause} data-play={t.motion.play}>{t.motion.pause}</button>
+    <span data-status-pct aria-hidden="true">  0%</span>
+    <span class="status__langs" role="group" aria-label={t.langsLabel}>
+      {LANGS.map((l) =>
+        l.code === lang ? (
+          <span class="status__lang is-current" lang={l.hreflang} aria-current="true">{l.label}</span>
+        ) : (
+          <a class="status__lang" href={l.path} hreflang={l.hreflang} lang={l.hreflang} data-lang-pick={l.code} aria-label={l.aria}>{l.label}</a>
+        ),
+      )}
+    </span>
+  </span>
+</nav>

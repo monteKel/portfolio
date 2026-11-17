@@ -1,0 +1,40 @@
+---
+import type { Dict } from '../data/content';
+import Pane from './Pane.astro';
+interface Props { t: Dict }
+const { t } = Astro.props;
+const r = t.research;
+---
+<section class="sec" id="lab" aria-label="lab">
+  <div class="panes panes--lab">
+    <Pane id="research" title={r.title} index={6} class="pane--research">
+      <div data-mdp>
+        <p class="muted small">{r.caption}</p>
+        <div class="mdp__field" role="img" aria-label={r.title}>
+          <canvas class="mdp__canvas" data-mdp-canvas aria-hidden="true"></canvas>
+        </div>
+        <div class="mdp__readout">
+          <div><span class="muted">{r.objective}</span> <strong class="mdp__f" data-mdp-f>0.000</strong></div>
+          <div><span class="muted">{r.step}</span> <span data-mdp-step>0</span> <span class="mdp__bar" data-mdp-bar aria-hidden="true"></span></div>
+        </div>
+        <p class="note">{r.note}</p>
+      </div>
+    </Pane>
+
+    <Pane id="games" title={t.play.title} index={7} class="pane--games">
+      <p class="muted small">{t.play.text}</p>
+      <div class="term" data-term>
+        <div class="term__out" data-term-out role="log" aria-live="polite" data-lenis-prevent></div>
+        <form class="term__line" data-term-form action="#" autocomplete="off">
+          <label for="term-input">kel@orbit:~$</label>
+          <input id="term-input" data-term-input type="text" maxlength="80" spellcheck="false" autocapitalize="off" enterkeyhint="send" />
+        </form>
+        <div class="term__quick">
+          {t.play.quick.map((q, i) => (
+            <button type="button" class={i < 3 ? 'btn btn--primary' : 'btn'} data-term-cmd={q.cmd} data-scramble>{q.label}</button>
+          ))}
+        </div>
+      </div>
+    </Pane>
+  </div>
+</section>

@@ -1,0 +1,42 @@
+---
+import type { Dict } from '../data/content';
+import Pane from './Pane.astro';
+interface Props { t: Dict }
+const { t } = Astro.props;
+const p = t.projects;
+// pendências (métricas, stack, links de código) ficam anotadas em content.ts, mas não aparecem no site por enquanto
+const isTodo = (s: string) => s.includes('TODO(kel)');
+// tira a indentação comum da arte ASCII (mais colunas úteis no celular)
+const dedent = (art: string) => {
+  const lines = art.replace(/^\n/, '').split('\n');
+  const lead = Math.min(...lines.filter((l) => l.trim()).map((l) => l.length - l.trimStart().length));
+  return lines.map((l) => l.slice(lead).trimEnd()).join('\n');
+};
+const items = p.items.map((it) => ({
+  ...it,
+  tags: it.tags.filter((g) => !isTodo(g)),
+  links: it.links.filter((l) => l.href),
+}));
+---
+<section class="sec" aria-label={p.title}>
+  <Pane id="projects" title={p.title} index={5} class="pane--projects">
+    <ul class="cards">
+      {items.map((it) => (
+        <li class="card" data-card>
+          <pre class="card__art" aria-hidden="true">{dedent(it.art)}</pre>
+          <p class="card__meta"><span class="chip">{it.status}</span> {it.year}</p>
+          <h3 class="card__title">{it.name}</h3>
+          <p class="card__line">{it.line}</p>
+          {it.tags.length > 0 && <ul class="tags">{it.tags.map((g) => <li>{g}</li>)}</ul>}
+          {it.links.length > 0 && (
+            <p class="card__links">
+              {it.links.map((l) => (
+                <a class="btn" href={l.href!} target="_blank" rel="noopener noreferrer" data-scramble>{l.label}</a>
+              ))}
+            </p>
+          )}
+        </li>
+      ))}
+    </ul>
+  </Pane>
+</section>

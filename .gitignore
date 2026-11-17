@@ -1,0 +1,15 @@
+node_modules/
+dist/
+preview/
+.astro/
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.sql
+*.dump
+.DS_Store
+__pycache__/
+*.pyc

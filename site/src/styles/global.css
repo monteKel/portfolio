@@ -1,0 +1,1432 @@
+/* ============ tokens ============ */
+:root {
+  --void: #000000;
+  --ink: #e6e6e6;
+  --ash: #7a7a7a; /* 4.9:1 sobre preto: AA */
+  --line: #262626;
+  --dim: #3a3a3a; /* só decoração, nunca texto */
+  --blue: #7db7ff; /* blueshift */
+  --red: #ff5a36; /* redshift */
+  --amber: #ffa63d; /* cores do disco de acreção */
+  --gold: #ffdb80;
+  --hot: #fff6e3;
+
+  /* japonês: IBM Plex Sans JP recortada (só carregada em /ja/); depois, fontes do sistema */
+  --mono: 'Martian Mono Variable', 'IBM Plex Sans JP', ui-monospace, Menlo, Consolas, 'Hiragino Sans', 'Yu Gothic',
+    'Noto Sans JP', monospace;
+  --sans: 'IBM Plex Sans Variable', 'IBM Plex Sans JP', system-ui, -apple-system, 'Segoe UI', 'Hiragino Sans',
+    'Yu Gothic UI', 'Yu Gothic', 'Noto Sans JP', sans-serif;
+
+  --pad: clamp(1.25rem, 5vw, 5rem);
+  /* largura máxima do conteúdo (monitores muito largos) e respiro lateral, incluindo o notch do iPhone */
+  --maxw: 112rem;
+  --gutter: max(var(--pad), calc((100% - var(--maxw)) / 2), env(safe-area-inset-left), env(safe-area-inset-right));
+  /* barra de baixo + área do indicador de início do iPhone */
+  --status-total: calc(var(--status-h) + env(safe-area-inset-bottom));
+  --status-h: 2rem;
+  --lh: 1.3; /* altura de linha das grades ASCII */
+
+  color-scheme: dark;
+}
+
+/* ============ base ============ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--void);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* enfeites (brilho do botão, inclinação dos cards) nunca criam rolagem lateral */
+  overflow-x: clip;
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  padding-bottom: var(--status-total);
+  overflow-x: clip;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+img,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+pre {
+  margin: 0;
+  font-family: var(--mono);
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--void);
+}
+
+:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 50;
+  padding: 0.5rem 0.75rem;
+  background: var(--ink);
+  color: var(--void);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  transform: translateY(-200%);
+}
+.skip:focus {
+  transform: none;
+}
+
+.todo {
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: 0.85em;
+  outline: 1px dashed var(--red);
+  outline-offset: 2px;
+}
+
+/* ============ fundo: buraco negro ============ */
+.bh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.bh canvas {
+  width: 100%;
+  height: 100%;
+}
+
+main,
+.footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============ peças comuns ============ */
+.sec {
+  padding: 3rem var(--gutter);
+}
+.small {
+  font-size: 0.85rem;
+}
+
+.cmd {
+  margin: 0 0 2.5rem;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.cmd__ps {
+  color: var(--ash);
+}
+.cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.05em;
+  margin-left: 0.2em;
+  vertical-align: -0.15em;
+  background: currentColor;
+  animation: blink 1.1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.rule {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  user-select: none;
+}
+
+.lead {
+  max-width: 62ch;
+  color: var(--ink);
+}
+.muted {
+  color: var(--ash);
+}
+.note {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ash);
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.35rem 0.25rem;
+  background: transparent;
+  border: 0;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  /* quebra só quando não cabe (texto ampliado / tela estreita) */
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.btn::before {
+  content: '[ ';
+  color: var(--ash);
+}
+.btn::after {
+  content: ' ]';
+  color: var(--ash);
+}
+.btn:hover,
+.btn:focus-visible {
+  background: var(--ink);
+  color: var(--void);
+}
+.btn:hover::before,
+.btn:hover::after,
+.btn:focus-visible::before,
+.btn:focus-visible::after {
+  color: var(--void);
+}
+
+/* ============ hero: palco fixado durante a queda ============ */
+.hero__stage {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+.hero__intro {
+  position: relative;
+  z-index: 2;
+  height: 100vh;
+  height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  /* coluna nunca mais larga que a tela (texto ampliado quebra em vez de vazar) */
+  grid-template-columns: minmax(0, 1fr);
+  padding: 1.25rem var(--gutter) calc(var(--status-total) + 1.5rem);
+  text-shadow: 0 0 2px #000, 0 0 12px #000;
+}
+.hero__intro::before {
+  /* garante leitura do texto sobre o disco */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.78) 0%, rgb(0 0 0 / 0.35) 45%, rgb(0 0 0 / 0) 65%);
+  pointer-events: none;
+}
+.hero__top,
+.hero__inner,
+.hero__hint {
+  position: relative;
+}
+.hero__top {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--ash);
+}
+.hero__inner {
+  align-self: end;
+  max-width: 64ch;
+}
+.hero__name {
+  --wdth: 100;
+  margin: 0 0 1.5rem;
+  font-family: var(--mono);
+  /* "Cartaxo" (7 letras, avanço 0.75em) sempre cabe na largura, mesmo com texto ampliado */
+  font-size: min(clamp(2.3rem, 6.6vw, 8.5rem), calc((100vw - 2 * var(--pad)) / 7 / 0.78));
+  font-weight: 700;
+  font-variation-settings: 'wdth' var(--wdth);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+.hero__role {
+  max-width: 40ch;
+  margin-bottom: 1.5rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  line-height: 1.45;
+}
+.hero__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ash);
+}
+.hero__lines li::before {
+  content: '> ';
+  color: var(--dim);
+}
+.live {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.5em;
+  background: var(--red);
+  vertical-align: 0.05em;
+  animation: blink 2.2s steps(1) infinite;
+}
+.hero__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 3ch;
+  margin-top: 1.4rem;
+}
+
+/* botão de contato: pulsa como radiação saindo do buraco */
+.cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 1ch;
+  padding: 0.6rem 1.2rem;
+  background: var(--amber);
+  color: #000000;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-shadow: none;
+  animation: cta-glow 2.4s ease-out infinite;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.cta::before {
+  content: '>';
+  animation: blink 1.1s steps(1) infinite;
+}
+.cta::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 1px solid var(--amber);
+  pointer-events: none;
+  animation: cta-ring 2.4s ease-out infinite;
+}
+.cta:hover,
+.cta:focus-visible {
+  background: var(--hot);
+  transform: translateY(-1px);
+}
+@keyframes cta-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgb(255 150 50 / 0.6), 0 0 16px rgb(255 140 40 / 0.3);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgb(255 150 50 / 0), 0 0 16px rgb(255 140 40 / 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(255 150 50 / 0), 0 0 16px rgb(255 140 40 / 0.3);
+  }
+}
+@keyframes cta-ring {
+  0% {
+    inset: -2px;
+    opacity: 0.9;
+  }
+  100% {
+    inset: -10px;
+    opacity: 0;
+  }
+}
+
+.hero__hint {
+  justify-self: end;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ash);
+}
+
+
+/* tela baixa (celular deitado): hero mais compacto para caber acima da barra */
+@media (max-height: 480px) {
+  .hero__intro {
+    padding-top: 0.75rem;
+    padding-bottom: calc(var(--status-total) + 0.75rem);
+  }
+  .hero__name {
+    margin-bottom: 0.6rem;
+  }
+  .hero__role {
+    margin-bottom: 0.6rem;
+    font-size: 0.95rem;
+    line-height: 1.35;
+  }
+  .hero__status {
+    margin-top: 0.6rem;
+    gap: 0.6rem 3ch;
+  }
+}
+
+/* chegada: os painéis nascem minúsculos no centro e crescem durante a queda.
+   Estado inicial vem do CSS (sem flash antes do JS); o noscript.css desfaz. */
+.arrive {
+  position: relative;
+  z-index: 1;
+  padding: 4.5rem var(--gutter) 2rem;
+  transform-origin: 50% 50vh;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero__intro {
+    position: absolute;
+    inset: 0 0 auto 0;
+  }
+  .arrive {
+    opacity: 0;
+    transform: scale(0.04);
+    will-change: transform, opacity;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrive {
+    padding-top: 2rem;
+  }
+}
+
+/* ============ painéis (estilo tmux) ============ */
+.panes {
+  display: grid;
+  /* coluna única que nunca passa da tela (conteúdo largo quebra em vez de alargar) */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.75rem 1.5rem;
+}
+@media (min-width: 900px) {
+  .panes--overview {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .pane--about {
+    grid-column: span 7;
+  }
+  .pane--now {
+    grid-column: span 5;
+  }
+  .pane--stack {
+    grid-column: span 5;
+  }
+  .pane--contact {
+    grid-column: span 7;
+  }
+  .panes--lab {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
+  }
+  .pane--research {
+    grid-column: span 5;
+  }
+  .pane--games {
+    grid-column: span 7;
+  }
+}
+.pane {
+  position: relative;
+  padding: 1.5rem 1.5rem 1.25rem;
+  border: 1px solid var(--line);
+  background: rgb(0 0 0 / 0.82);
+  transition: border-color 0.2s ease;
+  scroll-margin-top: 4rem;
+}
+.pane:hover,
+.pane:focus-within {
+  border-color: var(--dim);
+}
+.pane__title {
+  position: absolute;
+  z-index: 2;
+  top: -0.7em;
+  left: 1.25ch;
+  margin: 0;
+  padding: 0 1ch;
+  background: var(--void);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.pane__title span:first-child {
+  color: var(--amber);
+}
+
+/* borda acende onde o mouse está (variáveis --mx/--my vêm do JS) */
+.pane::after,
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(255 176 70), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+.pane:hover::after,
+.card:hover::after {
+  opacity: 1;
+}
+.card {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* rastro ASCII do mouse */
+.trail {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* about */
+.about {
+  display: grid;
+  /* minmax(0, …): sem isso a largura nativa da foto (480px) alarga a coluna no celular */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+@media (min-width: 640px) {
+  .about {
+    grid-template-columns: minmax(0, 1fr) 11rem;
+  }
+}
+.about__line {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.facts {
+  margin: 1.25rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+.facts div {
+  display: grid;
+  grid-template-columns: 10ch minmax(0, 1fr);
+  gap: 1ch;
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--line);
+}
+.facts dt {
+  color: var(--ash);
+}
+.facts dd {
+  margin: 0;
+}
+.portrait {
+  display: block;
+  width: 100%;
+  max-width: 11rem;
+  align-self: start;
+  /* borda fina na cor do disco do buraco negro */
+  border: 1px solid var(--amber);
+  overflow: hidden;
+}
+.portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* now */
+.now {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.95rem;
+}
+.now li {
+  display: grid;
+  grid-template-columns: 12ch minmax(0, 1fr);
+  gap: 1ch;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+}
+.now li:first-child {
+  border-top: 0;
+}
+.now__tag {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.9;
+  color: var(--amber);
+}
+
+/* tags */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ash);
+}
+.tags li {
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--line);
+}
+.tags--big {
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+.tags--big li {
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.tags--big li:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+/* contato */
+.email {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 2ch;
+  margin: 0.75rem 0 1.25rem;
+}
+.email__text {
+  font-family: var(--mono);
+  font-size: clamp(1rem, 2.4vw, 1.6rem);
+  font-weight: 600;
+  color: #ffffff;
+  word-break: break-all;
+}
+.email__actions {
+  display: flex;
+  gap: 1ch;
+}
+.links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+.links li {
+  display: grid;
+  grid-template-columns: 12ch minmax(0, 1fr);
+  gap: 1ch;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--line);
+}
+.links span:first-child {
+  color: var(--ash);
+}
+.links a {
+  /* endereço longo (linkedin, nome do pdf) quebra em vez de vazar da tela no celular */
+  overflow-wrap: anywhere;
+}
+/* painel estreito (dobrável, iPhone SE, texto ampliado): rótulo em cima do valor, valor com a
+   largura toda. Medido em em do painel, então acompanha o tamanho do texto. */
+.pane {
+  container-type: inline-size;
+  /* palavra maior que a coluna (texto muito ampliado) quebra em vez de vazar do painel */
+  overflow-wrap: anywhere;
+}
+.mdp__readout > div {
+  min-width: 0;
+}
+@container (max-width: 16em) {
+  .facts div,
+  .now li,
+  .links li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+  }
+}
+.btn.is-pulsing {
+  animation: cta-glow 1.6s ease-out 3;
+}
+
+/* ============ projetos: cards ============ */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: 1rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  background: var(--void);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.card:hover,
+.card:focus-within {
+  border-color: var(--line);
+}
+.card__art {
+  height: 9.5em;
+  overflow: hidden;
+  font-size: 0.56rem;
+  line-height: 1.2;
+  color: var(--ash);
+  transition: color 0.2s ease;
+}
+/* celular: card largo o bastante para a arte em até 12px (legível), sem cortar */
+@media (max-width: 640px) {
+  .pane {
+    padding: 1.5rem 1rem 1.25rem;
+  }
+  .card {
+    container-type: inline-size;
+    padding: 0.75rem;
+  }
+  .card__art {
+    font-size: min(0.75rem, calc((100cqi - 1px) / 34 / 0.75));
+  }
+}
+.card:hover .card__art {
+  color: var(--gold);
+}
+.card__meta {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ash);
+}
+.chip {
+  padding: 0.1rem 0.45rem;
+  background: var(--ink);
+  color: var(--void);
+}
+.card__title {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.card__line {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ash);
+}
+.card__todo,
+.card__links {
+  margin: 0;
+  font-size: 0.75rem;
+}
+.card__links {
+  margin-top: auto;
+}
+
+/* ============ lab: pesquisa ao vivo ============ */
+.pane--research {
+  container-type: inline-size;
+}
+.mdp__field {
+  position: relative;
+  /* 56 colunas cabendo no painel (Martian Mono: avanço 0.75em) */
+  font-size: min(0.8rem, calc((100cqi - 2px) / 56 / 0.75));
+  line-height: var(--lh);
+  width: 56ch;
+  height: calc(18em * var(--lh));
+  margin: 0.75rem 0;
+  border: 1px solid var(--line);
+  font-family: var(--mono);
+}
+.mdp__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.mdp__readout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 2ch;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+.mdp__f {
+  font-size: 1.1rem;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+.mdp__bar {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  vertical-align: bottom;
+  color: var(--ink);
+  white-space: pre;
+}
+/* painel estreito (ou texto ampliado): a barra de progresso desce para a linha de baixo inteira */
+@container (max-width: 34ch) {
+  .mdp__bar {
+    display: block;
+  }
+}
+.pane--games {
+  container-type: inline-size;
+}
+/* ============ terminal + jogo ============ */
+.term {
+  margin-top: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--void);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+.term__bar {
+  padding: 0.4rem 1ch;
+  border-bottom: 1px solid var(--line);
+  color: var(--ash);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.term__out {
+  max-height: 65vh;
+  min-height: 9rem;
+  overflow-y: auto;
+  padding: 1rem 1.5ch 0.5rem;
+  overscroll-behavior: contain;
+}
+.term__row {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.55;
+}
+.term__row--echo {
+  color: var(--ash);
+}
+.term__row--dim {
+  color: var(--ash);
+}
+.term__row--err {
+  color: var(--red);
+}
+.term__line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1ch;
+  padding: 0.25rem 1.5ch 1rem;
+}
+.term__line label {
+  color: var(--ash);
+  overflow-wrap: anywhere;
+}
+.term__line input {
+  flex: 1 1 8ch;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  color: var(--ink);
+  caret-color: var(--ink);
+}
+.term__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5ch;
+  padding: 0.6rem 1.5ch;
+  border-top: 1px solid var(--line);
+}
+.btn--primary {
+  background: var(--ink);
+  color: var(--void);
+}
+.btn--primary::before,
+.btn--primary::after {
+  color: var(--void);
+}
+.term__line:focus-within {
+  box-shadow: inset 2px 0 0 var(--ink);
+}
+
+.mc {
+  margin: 0.75rem 0 1rem;
+  outline-offset: 4px;
+}
+.mc__help {
+  max-width: 64ch;
+  color: var(--ash);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+.mc__board {
+  /* encolhe a fonte para o tabuleiro inteiro caber no celular (Martian Mono: avanço 0.75em) */
+  font-size: min(1em, calc((100cqi - 3rem) / var(--w, 46) / 0.75));
+  position: relative;
+  width: calc(var(--w, 46) * 1ch);
+  max-width: 100%;
+  height: calc(var(--h, 13) * 1em * var(--lh));
+  line-height: var(--lh);
+  margin: 1rem 0;
+  overflow: hidden;
+}
+.mc__layer {
+  position: absolute;
+  inset: 0;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre;
+  pointer-events: none;
+}
+.mc__layer--uncut {
+  color: var(--dim);
+}
+.mc__layer--cut {
+  color: var(--ink);
+}
+.mc__node {
+  position: absolute;
+  left: calc(var(--x) * 1ch);
+  top: calc(var(--y) * 1em * var(--lh));
+  padding: 0;
+  border: 0;
+  background: var(--void);
+  font-family: var(--mono);
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mc__node--a {
+  color: var(--blue);
+}
+.mc__node--b {
+  color: var(--red);
+}
+.mc__node:hover,
+.mc__node:focus-visible {
+  background: var(--ink);
+  color: var(--void);
+}
+.mc__level {
+  margin: 0 0 0.25rem;
+  color: var(--ink);
+}
+.mc__score {
+  margin: 0 0 0.25rem;
+}
+.mc__msg {
+  min-height: 1.55em;
+  max-width: 70ch;
+  margin: 0 0 0.75rem;
+  color: var(--ash);
+}
+.mc--won .mc__msg {
+  color: var(--ink);
+}
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: transparent;
+  color: var(--ink);
+}
+.mc--won .mc__score {
+  color: var(--blue);
+}
+/* jogos de ML */
+.mc__board--click {
+  cursor: crosshair;
+}
+.km__c0 { color: var(--blue); }
+.km__c1 { color: var(--red); }
+.km__c2 { color: var(--amber); }
+.km__c3 { color: #ffffff; }
+.km__c4 { color: var(--ash); }
+.km__centroid {
+  color: #ffffff;
+  font-weight: 800;
+}
+.km__pick.is-active,
+.gd-on.is-active,
+.mc__controls .btn.is-active {
+  background: var(--ink);
+  color: var(--void);
+}
+.km__pick.is-active::before,
+.km__pick.is-active::after,
+.mc__controls .btn.is-active::before,
+.mc__controls .btn.is-active::after {
+  color: var(--void);
+}
+.gd__b0 { color: var(--dim); }
+.gd__b1 { color: var(--ash); }
+.gd__b2 { color: var(--amber); }
+.gd__b3 { color: var(--gold); }
+.gd__trail { color: var(--blue); }
+.gd__ball {
+  color: #ffffff;
+  font-weight: 800;
+}
+.mc__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1ch;
+}
+
+/* ============ rodapé ============ */
+.footer {
+  padding: 16vh var(--gutter) 3rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ash);
+  /* degradê: as ondas somem aos poucos em vez de cortar numa linha */
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.9) 55%);
+}
+.footer__mark {
+  font-size: clamp(0.75rem, 1.6vw, 1.15rem);
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+.footer__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem 3ch;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.footer__about {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1ch;
+}
+.footer__about > span {
+  /* cada frase fica inteira quando cabe; com texto ampliado, quebra em vez de vazar */
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* ============ barra de status (estilo tmux) ============ */
+.status {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 20;
+  height: var(--status-total);
+  display: flex;
+  align-items: center;
+  gap: 1ch;
+  padding: 0 max(1ch, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(1ch, env(safe-area-inset-left));
+  background: var(--void);
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.status__session {
+  padding: 0 0.75ch;
+  background: var(--ink);
+  color: var(--void);
+}
+.status__tabs {
+  display: none;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* abas que não cabem (texto ampliado) rolam dentro da barra em vez de empurrar o resto */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.status__tabs::-webkit-scrollbar {
+  display: none;
+}
+.status__tabs a {
+  display: block;
+  padding: 0.2rem 0.75ch;
+  color: var(--ash);
+  text-decoration: none;
+}
+.status__tabs a:hover,
+.status__tabs a:focus-visible {
+  color: var(--ink);
+}
+.status__tabs a.is-active {
+  background: var(--ink);
+  color: var(--void);
+}
+.status__section {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+.status__right {
+  flex: none;
+}
+/* barra apertada (tela estreita ou texto ampliado): medida em caracteres da própria barra,
+   então acompanha o tamanho do texto. Sai primeiro o que é só enfeite. */
+.status {
+  container: status / inline-size;
+}
+@container status (max-width: 48ch) {
+  .status__right {
+    gap: 1.25ch;
+  }
+  .status__right [data-status-pct] {
+    display: none;
+  }
+}
+@container status (max-width: 38ch) {
+  .status__session {
+    display: none;
+  }
+}
+@container status (max-width: 30ch) {
+  .status__section {
+    display: none;
+  }
+}
+/* bloco focado pela navegação (aba/tecla): a aba ativa já indica onde está */
+.pane[tabindex='-1']:focus {
+  outline: none;
+}
+.status__right {
+  margin-left: auto;
+  display: flex;
+  gap: 2ch;
+  color: var(--ash);
+}
+.status__motion {
+  padding: 0 0.5ch;
+  background: none;
+  border: 0;
+  color: var(--ash);
+  font: inherit;
+  cursor: pointer;
+}
+.status__motion:hover,
+.status__motion:focus-visible {
+  color: var(--ink);
+}
+.status__motion[aria-pressed='true'] {
+  color: var(--amber);
+}
+/* animações já paradas pelo sistema: o botão não tem função */
+@media (prefers-reduced-motion: reduce) {
+  .status__motion {
+    display: none;
+  }
+}
+/* pausado pelo visitante: CSS para no lugar (o buraco negro e a demo param pelo JS) */
+html.is-still *,
+html.is-still *::before,
+html.is-still *::after {
+  animation-play-state: paused !important;
+}
+.status__langs {
+  display: flex;
+  gap: 0.5ch;
+}
+.status__lang {
+  padding: 0 0.5ch;
+}
+.status__lang.is-current {
+  background: var(--ink);
+  color: var(--void);
+}
+.status__right a.status__lang {
+  color: var(--ash);
+}
+.status__right a.status__lang:hover,
+.status__right a.status__lang:focus-visible {
+  color: var(--ink);
+  text-decoration: none;
+}
+.status__right a {
+  color: var(--ink);
+  text-decoration: none;
+}
+.status__right a:hover {
+  text-decoration: underline;
+}
+@media (min-width: 900px) {
+  .status__tabs {
+    display: flex;
+  }
+  .status__section {
+    display: none;
+  }
+}
+
+/* ============ tela de idioma (1ª visita) ============ */
+.gate {
+  display: none;
+}
+html.lang-ask {
+  overflow: hidden;
+}
+/* indo para o idioma salvo: não pinta a página errada antes do redirecionamento */
+html.lang-moving body {
+  visibility: hidden;
+}
+html.lang-ask .gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(var(--pad), env(safe-area-inset-top)) var(--gutter) max(var(--pad), env(safe-area-inset-bottom));
+  background: var(--void);
+  font-family: var(--mono);
+}
+.gate__box {
+  width: min(36rem, 100%);
+  /* centraliza quando sobra espaço; quando não cabe, começa do topo e rola (nada cortado) */
+  margin: auto;
+}
+.gate__prompt {
+  margin: 0 0 1.4rem;
+  font-size: 0.8rem;
+  color: var(--ash);
+  white-space: nowrap;
+}
+.gate__cmd {
+  display: inline-block;
+  vertical-align: bottom;
+  color: var(--ink);
+}
+.gate__cursor {
+  display: inline-block;
+  width: 0.65em;
+  height: 1.15em;
+  margin-left: 0.4ch;
+  vertical-align: text-bottom;
+  background: var(--amber);
+}
+.gate__title {
+  margin: 0 0 2rem;
+  font-family: var(--mono);
+  font-size: clamp(1.15rem, 3.4vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.gate__title span {
+  display: block;
+}
+.gate__or {
+  color: var(--ash);
+  font-weight: 400;
+}
+.gate__opts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gate__opt {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1.5ch;
+  width: 20ch;
+  max-width: 100%;
+  padding: 0.75rem 1.5ch;
+  border: 1px solid var(--dim);
+  color: var(--ink);
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.gate__opt::before {
+  content: '>';
+  color: transparent;
+}
+.gate__code {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--ash);
+}
+.gate__opt:hover,
+.gate__opt:focus {
+  outline: none;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--void);
+}
+.gate__opt:hover::before,
+.gate__opt:focus::before {
+  color: var(--red);
+}
+.gate__opt:hover .gate__code,
+.gate__opt:focus .gate__code {
+  color: var(--void);
+}
+/* tela baixa (celular deitado): título menor e opções lado a lado */
+@media (max-height: 480px) {
+  .gate__prompt {
+    margin-bottom: 0.75rem;
+  }
+  .gate__title {
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+  }
+  .gate__opts {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .gate__opt {
+    padding-block: 0.5rem;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gate__cmd {
+    clip-path: inset(0 100% 0 0);
+    animation: gate-type 0.5s steps(13, end) 0.15s forwards;
+  }
+  .gate__cursor {
+    transform: translateX(-13ch);
+    animation:
+      gate-caret 0.5s steps(13, end) 0.15s forwards,
+      gate-blink 1s steps(1) 0.65s infinite;
+  }
+  .gate__title,
+  .gate__opts {
+    animation: gate-in 0.45s ease-out both;
+  }
+  .gate__title {
+    animation-delay: 0.7s;
+  }
+  .gate__opts {
+    animation-delay: 0.85s;
+  }
+  /* desliga como um monitor CRT: achata numa linha e some */
+  .gate.is-closing .gate__box {
+    animation: gate-off 0.5s cubic-bezier(0.6, 0, 0.4, 1) forwards;
+  }
+}
+@keyframes gate-type {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes gate-caret {
+  to {
+    transform: none;
+  }
+}
+@keyframes gate-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes gate-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes gate-off {
+  0% {
+    transform: none;
+    filter: brightness(1);
+  }
+  45% {
+    transform: scale(1, 0.012);
+    filter: brightness(2.2);
+  }
+  100% {
+    transform: scale(0, 0.012);
+    opacity: 0;
+  }
+}
+
+/* ============ movimento reduzido ============ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .arrive {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============ japonês ============ */
+/* quebra de linha por frase (Chrome) em vez de no meio da palavra */
+:lang(ja) {
+  line-break: strict;
+  word-break: auto-phrase;
+  /* frase maior que a coluna (tela estreita) quebra no meio em vez de vazar */
+  overflow-wrap: anywhere;
+}

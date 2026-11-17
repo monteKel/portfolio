@@ -1,0 +1,10 @@
+---
+// Painel estilo tmux: borda fina, título na borda de cima.
+interface Props { id?: string; title: string; index: number; class?: string }
+const { id, title, index, class: cls = '' } = Astro.props;
+const titleId = `${id ?? title.replace(/\W+/g, '-')}-title`;
+---
+<article class={`pane ${cls}`} id={id} aria-labelledby={titleId}>
+  <h2 class="pane__title" id={titleId}><span aria-hidden="true">{index}:</span><span class="pane__name">{title}</span></h2>
+  <slot />
+</article>

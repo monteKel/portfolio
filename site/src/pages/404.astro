@@ -1,0 +1,46 @@
+---
+// Página 404 (Cloudflare Pages a serve com status 404 em vez de cair na home).
+// Sozinha, sem o script de idioma: escrita nos três idiomas, só links de volta.
+import '../styles/fonts.css';
+import '../styles/404.css';
+import { LANGS } from '../data/content';
+
+const csp = [
+  "default-src 'none'",
+  "style-src 'self'",
+  "font-src 'self'",
+  "img-src 'self'",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "object-src 'none'",
+].join('; ');
+const back: Record<string, string> = { en: 'back to the start', pt: 'voltar ao início', ja: 'トップへ戻る' };
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content={csp} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="dark" />
+    <title>404 · Kelve Cartaxo</title>
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  </head>
+  <body>
+    <main class="lost">
+      <p class="lost__prompt" aria-hidden="true">kel@orbit:~$ cd ./this-page</p>
+      <h1 class="lost__code">404</h1>
+      <p class="lost__text">lost past the event horizon.</p>
+      <p class="lost__text lost__text--dim" lang="pt-BR">perdido além do horizonte de eventos.</p>
+      <p class="lost__text lost__text--dim" lang="ja">事象の地平線の向こうで迷子です。</p>
+      <ul class="lost__links">
+        {LANGS.map((l) => (
+          <li><a href={l.path} hreflang={l.hreflang} lang={l.hreflang}>{back[l.code]}</a></li>
+        ))}
+      </ul>
+    </main>
+  </body>
+</html>
