@@ -30,8 +30,8 @@ const r = t.research;
           <input id="term-input" data-term-input type="text" maxlength="80" spellcheck="false" autocapitalize="off" enterkeyhint="send" />
         </form>
         <div class="term__quick">
-          {t.play.quick.map((q, i) => (
-            <button type="button" class={i < 3 ? 'btn btn--primary' : 'btn'} data-term-cmd={q.cmd} data-scramble>{q.label}</button>
+          {t.play.quick.map((q) => (
+            <button type="button" class={q.cmd === 'help' ? 'btn' : 'btn btn--primary'} data-term-cmd={q.cmd} data-scramble>{q.label}</button>
           ))}
         </div>
       </div>

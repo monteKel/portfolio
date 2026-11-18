@@ -1,7 +1,8 @@
 // Max-Cut jogável dentro do terminal, em 5 níveis.
-// Ótimo exato por enumeração em código Gray (até 20 nós).
+// Ótimo exato por enumeração em código Gray (até 20 nós), guardando uma divisão ótima.
 // "resolver" roda busca local (1 troca por vez) a partir do SEU estado atual:
 // nos níveis maiores ela costuma travar num ótimo local, e dá para ganhar dela.
+// "dica" troca um nó que está do lado errado em relação à divisão ótima: nenhum nível fica sem saída.
 // Segurança: nada de innerHTML; só createElement + textContent.
 
 interface Level {
@@ -86,7 +87,7 @@ function cutSize(edges: [number, number][], side: Uint8Array): number {
   return c;
 }
 
-function optimum(level: Level): number {
+function optimum(level: Level): { best: number; side: Uint8Array } {
   // enumera todos os cortes em código Gray (nó 0 fixo): cada passo troca 1 nó e
   // atualiza o corte só pelos vizinhos dele. 20 nós = 2^19 passos, poucos ms.
   const n = level.nodes.length;
@@ -98,6 +99,7 @@ function optimum(level: Level): number {
   const s = new Uint8Array(n);
   let c = 0;
   let best = 0;
+  let bestSide = new Uint8Array(n);
   const total = 1 << (n - 1);
   for (let i = 1; i < total; i++) {
     const v = 1 + (31 - Math.clz32(i & -i));
@@ -105,9 +107,12 @@ function optimum(level: Level): number {
     for (const u of adj[v]!) d += s[u] !== s[v] ? -1 : 1;
     s[v] = s[v] ? 0 : 1;
     c += d;
-    if (c > best) best = c;
+    if (c > best) {
+      best = c;
+      bestSide = s.slice();
+    }
   }
-  return best;
+  return { best, side: bestSide };
 }
 
 function edgeChar(dx: number, dy: number): string {
@@ -172,12 +177,15 @@ export interface GameText {
   level: (n: number, total: number) => string;
   score: (cut: number, total: number, best: number) => string;
   winSelf: (moves: number) => string;
+  winHelped: (moves: number, hints: number) => string;
+  hintMsg: (node: number, left: number) => string;
   solverFound: (from: number, to: number, flips: number) => string;
   solverStuck: (from: number, to: number, flips: number, best: number) => string;
   solverNoMove: (cut: number, best: number) => string;
   allDone: string;
   shuffle: string;
   solve: string;
+  hint: string;
   next: string;
   quit: string;
   node: (n: number, group: string) => string;
@@ -187,8 +195,10 @@ export function mountMaxCut(host: HTMLElement, text: GameText, onQuit: (summary:
   let li = 0;
   let level = LEVELS[0]!;
   let best = 0;
+  let goal: Uint8Array = new Uint8Array(0);
   let side = new Uint8Array(0);
   let moves = 0;
+  let hints = 0;
   let assisted = false;
   let solving = 0;
 
@@ -235,6 +245,7 @@ export function mountMaxCut(host: HTMLElement, text: GameText, onQuit: (summary:
   };
   mk(text.shuffle, shuffle);
   mk(text.solve, solve);
+  mk(text.hint, hint);
   const nextBtn = mk(text.next, nextLevel);
   mk(text.quit, quit);
 
@@ -245,10 +256,11 @@ export function mountMaxCut(host: HTMLElement, text: GameText, onQuit: (summary:
     clearInterval(solving);
     li = i;
     level = LEVELS[i]!;
-    best = optimum(level);
+    ({ best, side: goal } = optimum(level));
     side = new Uint8Array(level.nodes.length);
     for (let k = 0; k < side.length; k++) side[k] = k % 3 === 0 ? 1 : 0;
     moves = 0;
+    hints = 0;
     assisted = false;
     message.textContent = '';
     board.style.setProperty('--w', String(level.w));
@@ -260,11 +272,7 @@ export function mountMaxCut(host: HTMLElement, text: GameText, onQuit: (summary:
       b.className = 'mc__node';
       b.style.setProperty('--x', String(x - 1));
       b.style.setProperty('--y', String(y));
-      b.addEventListener('click', () => {
-        assisted = false;
-        moves++;
-        flip(k);
-      });
+      b.addEventListener('click', () => play(k));
       board.append(b);
       return b;
     });
@@ -288,7 +296,45 @@ export function mountMaxCut(host: HTMLElement, text: GameText, onQuit: (summary:
     const won = now === best;
     root.classList.toggle('mc--won', won);
     nextBtn.disabled = !won || li === LEVELS.length - 1;
-    if (won && !assisted) message.textContent = li === LEVELS.length - 1 ? `${text.winSelf(moves)} ${text.allDone}` : text.winSelf(moves);
+    if (won && (hints > 0 || !assisted)) {
+      const msg = hints > 0 ? text.winHelped(moves, hints) : text.winSelf(moves);
+      message.textContent = li === LEVELS.length - 1 ? `${msg} ${text.allDone}` : msg;
+    }
+  }
+
+  function play(i: number) {
+    clearInterval(solving);
+    assisted = false;
+    moves++;
+    flip(i);
+  }
+
+  // dica: compara com a divisão ótima guardada (ou com ela invertida, que é o mesmo corte),
+  // escolhe a orientação mais próxima e troca o nó errado que mais ajuda agora
+  function hint() {
+    clearInterval(solving);
+    if (cutSize(level.edges, side) === best) return;
+    let diff = 0;
+    for (let i = 0; i < side.length; i++) if (side[i] !== goal[i]) diff++;
+    const invert = diff > side.length - diff;
+    const wrong: number[] = [];
+    for (let i = 0; i < side.length; i++) if ((side[i] !== goal[i]) !== invert) wrong.push(i);
+    const base = cutSize(level.edges, side);
+    let who = wrong[0]!;
+    let gain = -Infinity;
+    for (const i of wrong) {
+      side[i] = side[i] ? 0 : 1;
+      const g = cutSize(level.edges, side) - base;
+      side[i] = side[i] ? 0 : 1;
+      if (g > gain) {
+        gain = g;
+        who = i;
+      }
+    }
+    hints++;
+    assisted = true;
+    message.textContent = text.hintMsg(who + 1, wrong.length - 1);
+    flip(who);
   }
 
   function flip(i: number) {
@@ -300,6 +346,7 @@ export function mountMaxCut(host: HTMLElement, text: GameText, onQuit: (summary:
     clearInterval(solving);
     for (let i = 0; i < side.length; i++) side[i] = Math.random() < 0.5 ? 0 : 1;
     moves = 0;
+    hints = 0;
     assisted = false;
     message.textContent = '';
     render();
@@ -342,14 +389,37 @@ export function mountMaxCut(host: HTMLElement, text: GameText, onQuit: (summary:
     root.focus({ preventScroll: true });
   }
 
+  // números: com 10 ou mais nós, "1" espera um instante por um segundo dígito ("1" "2" = nó 12)
+  let pending = 0;
+  let pendingTimer = 0;
+  function digit(d: number) {
+    const n = side.length;
+    if (pending) {
+      clearTimeout(pendingTimer);
+      const two = pending * 10 + d;
+      const first = pending;
+      pending = 0;
+      if (two <= n) return play(two - 1);
+      play(first - 1);
+    }
+    if (d === 0) return;
+    if (d * 10 <= n) {
+      pending = d;
+      pendingTimer = window.setTimeout(() => {
+        const k = pending;
+        pending = 0;
+        if (k) play(k - 1);
+      }, 450);
+    } else if (d <= n) play(d - 1);
+  }
+
   function onKey(e: KeyboardEvent) {
-    if (e.key >= '1' && e.key <= '9' && Number(e.key) <= side.length) {
-      assisted = false;
-      moves++;
-      flip(Number(e.key) - 1);
+    if (e.key >= '0' && e.key <= '9') {
+      digit(Number(e.key));
       e.preventDefault();
     } else if (e.key === 'r') shuffle();
     else if (e.key === 's') solve();
+    else if (e.key === 'h') hint();
     else if (e.key === 'n' && !nextBtn.disabled) nextLevel();
     else if (e.key === 'q' || e.key === 'Escape') quit();
   }
@@ -357,6 +427,7 @@ export function mountMaxCut(host: HTMLElement, text: GameText, onQuit: (summary:
 
   function quit() {
     clearInterval(solving);
+    clearTimeout(pendingTimer);
     root.removeEventListener('keydown', onKey);
     const summary = `${text.level(li + 1, LEVELS.length)} ${text.score(cutSize(level.edges, side), level.edges.length, best)}`;
     root.remove();

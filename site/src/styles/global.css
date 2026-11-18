@@ -997,40 +997,35 @@ main,
 .mc--won .mc__score {
   color: var(--blue);
 }
-/* jogos de ML */
-.mc__board--click {
-  cursor: crosshair;
+/* cobrinha */
+.sn__board {
+  /* deslizar o dedo no tabuleiro vira direção, não rolagem */
+  touch-action: none;
 }
-.km__c0 { color: var(--blue); }
-.km__c1 { color: var(--red); }
-.km__c2 { color: var(--amber); }
-.km__c3 { color: #ffffff; }
-.km__c4 { color: var(--ash); }
-.km__centroid {
+.sn__wall { color: var(--ash); }
+.sn__body { color: var(--ink); }
+.sn__head {
   color: #ffffff;
   font-weight: 800;
 }
-.km__pick.is-active,
-.gd-on.is-active,
-.mc__controls .btn.is-active {
-  background: var(--ink);
-  color: var(--void);
+.sn__food { color: var(--amber); }
+.mc--won .sn__food { color: var(--blue); }
+/* direcional em cruz: alvo de toque grande no celular */
+.sn__pad {
+  display: grid;
+  grid-template-columns: repeat(3, 3.5rem);
+  grid-template-rows: repeat(2, 2.75rem);
+  gap: 0.25rem;
+  margin: -0.25rem 0 1rem;
 }
-.km__pick.is-active::before,
-.km__pick.is-active::after,
-.mc__controls .btn.is-active::before,
-.mc__controls .btn.is-active::after {
-  color: var(--void);
+.sn__key {
+  padding: 0;
+  text-align: center;
 }
-.gd__b0 { color: var(--dim); }
-.gd__b1 { color: var(--ash); }
-.gd__b2 { color: var(--amber); }
-.gd__b3 { color: var(--gold); }
-.gd__trail { color: var(--blue); }
-.gd__ball {
-  color: #ffffff;
-  font-weight: 800;
-}
+.sn__key--0 { grid-area: 1 / 2; }
+.sn__key--3 { grid-area: 2 / 1; }
+.sn__key--2 { grid-area: 2 / 2; }
+.sn__key--1 { grid-area: 2 / 3; }
 .mc__controls {
   display: flex;
   flex-wrap: wrap;

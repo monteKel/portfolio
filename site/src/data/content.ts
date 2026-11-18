@@ -301,11 +301,10 @@ const en: Dict = {
   },
   play: {
     title: 'games',
-    text: 'Three algorithms to play against. Try to beat them.',
+    text: 'A graph puzzle to play against an algorithm, and the classic snake.',
     quick: [
       { cmd: 'play', label: 'Max-Cut' },
-      { cmd: 'kmeans', label: 'k-means' },
-      { cmd: 'descent', label: 'gradient descent' },
+      { cmd: 'snake', label: 'snake' },
       { cmd: 'help', label: 'help' },
     ],
   },
@@ -448,11 +447,10 @@ const pt: Dict = {
   },
   play: {
     title: 'jogos',
-    text: 'Três algoritmos para jogar contra. Tente ganhar deles.',
+    text: 'Um quebra-cabeça de grafos para jogar contra um algoritmo, e a cobrinha clássica.',
     quick: [
       { cmd: 'play', label: 'Max-Cut' },
-      { cmd: 'kmeans', label: 'k-means' },
-      { cmd: 'descent', label: 'descida de gradiente' },
+      { cmd: 'snake', label: 'cobrinha' },
       { cmd: 'help', label: 'help' },
     ],
   },
@@ -595,11 +593,10 @@ const ja: Dict = {
   },
   play: {
     title: 'ゲーム',
-    text: 'アルゴリズムと対戦する3つのゲーム。勝てるか試してみてください。',
+    text: 'アルゴリズムと対戦するグラフパズルと、定番のスネーク。',
     quick: [
       { cmd: 'play', label: 'Max-Cut' },
-      { cmd: 'kmeans', label: 'k-means' },
-      { cmd: 'descent', label: '勾配降下法' },
+      { cmd: 'snake', label: 'スネーク' },
       { cmd: 'help', label: 'help' },
     ],
   },
