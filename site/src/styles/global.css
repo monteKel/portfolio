@@ -860,6 +860,10 @@ main,
   padding: 1rem 1.5ch 0.5rem;
   overscroll-behavior: contain;
 }
+/* jogo aberto: o terminal cresce para o jogo inteiro caber (botões não somem dentro da rolagem) */
+.term__out:has(> .mc) {
+  max-height: none;
+}
 .term__row {
   white-space: pre-wrap;
   word-break: break-word;
@@ -1030,6 +1034,8 @@ main,
   display: flex;
   flex-wrap: wrap;
   gap: 1ch;
+  /* ao rolar até os botões, não parar atrás da barra fixa de baixo */
+  scroll-margin-bottom: calc(var(--status-total) + 1rem);
 }
 
 /* ============ rodapé ============ */

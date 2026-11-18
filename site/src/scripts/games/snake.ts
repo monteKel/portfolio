@@ -20,8 +20,8 @@ const T = {
     help: "Eat the bits (01) to grow. Don't hit the walls or your own tail. Arrow keys or WASD, swipe on the board or use the buttons. space pauses, r restarts, q quits.",
     ready: 'press an arrow, swipe or tap a button to start.',
     paused: 'paused. press space or an arrow to continue.',
-    over: (s: number, b: number) => `game over: ${s} bits. best: ${b}. press r to play again.`,
-    record: (s: number) => `new record: ${s} bits! press r to play again.`,
+    over: (s: number, b: number) => `game over: ${s} bits. best: ${b}. tap the board or restart (r) to play again.`,
+    record: (s: number) => `new record: ${s} bits! tap the board or restart (r) to play again.`,
     score: (s: number, b: number) => `bits ${s}. best ${b}.`,
     summary: (b: number) => `snake: best ${b} bits.`,
     restart: 'restart',
@@ -34,8 +34,8 @@ const T = {
     help: 'Coma os bits (01) para crescer. Não bata na parede nem no próprio rabo. Setas ou WASD, deslize o dedo no tabuleiro ou use os botões. espaço pausa, r recomeça, q sai.',
     ready: 'aperte uma seta, deslize ou toque num botão para começar.',
     paused: 'pausado. aperte espaço ou uma seta para continuar.',
-    over: (s: number, b: number) => `fim: ${s} bits. recorde: ${b}. aperte r para jogar de novo.`,
-    record: (s: number) => `recorde novo: ${s} bits! aperte r para jogar de novo.`,
+    over: (s: number, b: number) => `fim: ${s} bits. recorde: ${b}. toque no tabuleiro ou em recomeçar (r) para jogar de novo.`,
+    record: (s: number) => `recorde novo: ${s} bits! toque no tabuleiro ou em recomeçar (r) para jogar de novo.`,
     score: (s: number, b: number) => `bits ${s}. recorde ${b}.`,
     summary: (b: number) => `cobrinha: recorde ${b} bits.`,
     restart: 'recomeçar',
@@ -48,8 +48,8 @@ const T = {
     help: 'ビット（01）を食べて長くなろう。壁や自分の体にぶつかったら終わり。矢印キーか WASD、盤面をスワイプ、またはボタンで操作。スペースで一時停止、r でやり直し、q で終了。',
     ready: '矢印キー、スワイプ、またはボタンでスタート。',
     paused: '一時停止中。スペースか矢印キーで再開。',
-    over: (s: number, b: number) => `ゲームオーバー：${s} ビット。最高記録：${b}。r でもう一度。`,
-    record: (s: number) => `新記録：${s} ビット！r でもう一度。`,
+    over: (s: number, b: number) => `ゲームオーバー：${s} ビット。最高記録：${b}。盤面か「やり直し」（r）でもう一度。`,
+    record: (s: number) => `新記録：${s} ビット！盤面か「やり直し」（r）でもう一度。`,
     score: (s: number, b: number) => `ビット ${s}。最高 ${b}。`,
     summary: (b: number) => `スネーク：最高 ${b} ビット。`,
     restart: 'やり直し',
@@ -113,12 +113,12 @@ export function mountSnake(host: HTMLElement, lang: Lang, onQuit: (summary: stri
     const b = el('button', `btn sn__key sn__key--${d}`, arrows[d]);
     b.type = 'button';
     b.setAttribute('aria-label', t.dirs[d]!);
-    b.addEventListener('click', () => turn(d));
+    b.addEventListener('click', () => (state === 'over' ? tapRestart(d) : turn(d)));
     pad.append(b);
   });
   ui.board.after(pad);
 
-  ui.button(t.restart, reset);
+  ui.button(t.restart, reset).classList.add('btn--primary');
   const pauseBtn = ui.button(t.pause, () => (state === 'run' ? pause() : state === 'paused' && resume()));
   ui.button(t.quit, quit);
 
@@ -130,6 +130,7 @@ export function mountSnake(host: HTMLElement, lang: Lang, onQuit: (summary: stri
   let best = loadBest();
   let state: 'ready' | 'run' | 'paused' | 'over' = 'ready';
   let timer = 0;
+  let diedAt = 0;
 
   function placeBit() {
     const free: [number, number][] = [];
@@ -210,9 +211,18 @@ export function mountSnake(host: HTMLElement, lang: Lang, onQuit: (summary: stri
     draw();
   }
 
+  // depois de morrer: toque no tabuleiro ou no direcional recomeça (no celular não tem tecla r).
+  // Espera um instante para um toque que já estava a caminho não pular a tela de fim.
+  function tapRestart(d?: Dir) {
+    if (state !== 'over' || Date.now() - diedAt < 450) return;
+    reset();
+    if (d !== undefined) turn(d);
+  }
+
   function gameOver() {
     clearInterval(timer);
     state = 'over';
+    diedAt = Date.now();
     pauseBtn.disabled = true;
     const record = score > best;
     if (record) {
@@ -222,6 +232,8 @@ export function mountSnake(host: HTMLElement, lang: Lang, onQuit: (summary: stri
     ui.root.classList.toggle('mc--won', record);
     ui.message.textContent = record ? t.record(score) : t.over(score, best);
     draw(true);
+    // botões de recomeçar à vista (tela baixa: podiam ficar abaixo da dobra)
+    ui.controls.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   function draw(dead = false) {
@@ -268,11 +280,12 @@ export function mountSnake(host: HTMLElement, lang: Lang, onQuit: (summary: stri
     const dx = p.clientX - touch[0];
     const dy = p.clientY - touch[1];
     touch = null;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return tapRestart();
     turn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : 3) : dy > 0 ? 2 : 0);
   };
   ui.board.addEventListener('touchstart', onTouchStart, { passive: true });
   ui.board.addEventListener('touchend', onTouchEnd, { passive: true });
+  ui.board.addEventListener('click', () => tapRestart());
 
   // saiu do jogo (clicou fora, trocou de aba): pausa em vez de morrer sozinho
   const onFocusOut = (e: FocusEvent) => {
