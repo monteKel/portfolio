@@ -7,6 +7,7 @@ import Lenis from 'lenis';
 import { mountBlackHole, type BlackHole } from './blackhole/host';
 import { buildTrace, buildGrids, paintGrids, type Grids } from './mdp';
 import { mountTerminal } from './terminal';
+import { mountDetective } from './detective';
 import { revealEmail } from './email';
 import { initInteractions } from './interact';
 import type { Lang } from './games/kit';
@@ -480,6 +481,10 @@ export function start(): void {
     const names = $$('.card__title').map((n) => n.textContent ?? '');
     mountTerminal(term, lang, names);
   }
+
+  // ---------- detetive (caso do dia) ----------
+  const det = $('[data-det]');
+  if (det) mountDetective(det, lang);
 
   // ---------- contato ----------
   const showBtn = $<HTMLButtonElement>('[data-email-show]');

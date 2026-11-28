@@ -31,7 +31,8 @@ const csp = [
   "style-src 'self'",
   "img-src 'self'",
   "font-src 'self'",
-  "connect-src 'self'",
+  // API do jogo do detetive (VM própria, via Cloudflare Tunnel); igual ao _headers
+  "connect-src 'self' https://api.kelvecartaxo.dev",
   "worker-src 'self'",
   "manifest-src 'self'",
   "base-uri 'none'",

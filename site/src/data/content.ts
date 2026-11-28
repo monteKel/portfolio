@@ -59,6 +59,8 @@ export interface Dict {
   projects: { title: string; items: Project[]; code: string; todoLink: string };
   research: { title: string; caption: string; note: string; objective: string; step: string };
   play: { title: string; text: string; quick: { cmd: string; label: string }[] };
+  /** jogo diário do detetive (casos em português, servidor na VM) */
+  detective: { title: string; intro: string; note: string; langNote: string | null };
   footer: { built: string; privacy: string; rights: string };
   /** nome dos idiomas na barra (aria do grupo) */
   langsLabel: string;
@@ -160,6 +162,7 @@ const en: Dict = {
     { id: 'projects', label: 'projects' },
     { id: 'research', label: 'diversity' },
     { id: 'games', label: 'games' },
+    { id: 'detective', label: 'detective' },
   ],
   hero: {
     name: 'Kelve Cartaxo',
@@ -308,6 +311,13 @@ const en: Dict = {
       { cmd: 'help', label: 'help' },
     ],
   },
+  detective: {
+    title: 'detective, daily case',
+    intro:
+      'A new mystery every day. You only see the situation; the game master knows the whole story and answers only yes, no or irrelevant. Ask, then send your theory.',
+    note: 'game master: Llama 3.2 3B fine-tuned with LoRA on 200 cases, 4-bit, on a 1-core VM. 96.6% on my eval set, ~6 s per answer.',
+    langNote: 'Cases are in Portuguese, so ask in Portuguese.',
+  },
   footer: {
     built: 'Built with Astro and GSAP.',
     privacy: 'No cookies, no trackers.',
@@ -333,6 +343,7 @@ const pt: Dict = {
     { id: 'projects', label: 'projetos' },
     { id: 'research', label: 'diversidade' },
     { id: 'games', label: 'jogos' },
+    { id: 'detective', label: 'detetive' },
   ],
   hero: {
     name: 'Kelve Cartaxo',
@@ -454,6 +465,13 @@ const pt: Dict = {
       { cmd: 'help', label: 'help' },
     ],
   },
+  detective: {
+    title: 'detetive, caso do dia',
+    intro:
+      'Um mistério novo por dia. Você só vê a situação; o mestre sabe a história inteira e responde apenas sim, não ou irrelevante. Pergunte e depois mande sua teoria.',
+    note: 'mestre: Llama 3.2 3B ajustado com LoRA em 200 casos, 4 bits, numa VM de 1 núcleo. 96,6% no meu avaliador, ~6 s por resposta.',
+    langNote: null,
+  },
   footer: {
     built: 'Feito com Astro e GSAP.',
     privacy: 'Sem cookies, sem rastreadores.',
@@ -479,6 +497,7 @@ const ja: Dict = {
     { id: 'projects', label: 'プロジェクト' },
     { id: 'research', label: '最大多様性' },
     { id: 'games', label: 'ゲーム' },
+    { id: 'detective', label: '探偵' },
   ],
   hero: {
     name: 'Kelve Cartaxo',
@@ -599,6 +618,13 @@ const ja: Dict = {
       { cmd: 'snake', label: 'スネーク' },
       { cmd: 'help', label: 'help' },
     ],
+  },
+  detective: {
+    title: '探偵・今日の事件',
+    intro:
+      '毎日ひとつ、新しい謎。あなたに見えるのは状況だけです。ゲームマスターは真相をすべて知っていて、「はい」「いいえ」「関係ない」だけで答えます。質問を重ねて、推理を送ってください。',
+    note: 'ゲームマスター：200件の事件でLoRA微調整したLlama 3.2 3B（4ビット）。1コアのVMで動作。自作の評価で正解率96.6%、回答は1回約6秒。',
+    langNote: '事件はポルトガル語です。質問もポルトガル語でどうぞ。',
   },
   footer: {
     built: 'Astro と GSAP で制作。',
