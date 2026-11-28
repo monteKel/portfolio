@@ -17,6 +17,7 @@ const T = {
     modeQ: 'question',
     modeT: 'theory',
     qLabel: 'ask (yes/no, in Portuguese)',
+    qLabelSame: 'ask (yes or no)',
     tLabel: 'your theory: what happened?',
     send: 'send',
     rank: 'leaderboard',
@@ -58,6 +59,7 @@ const T = {
     modeQ: 'pergunta',
     modeT: 'teoria',
     qLabel: 'pergunte (sim ou não)',
+    qLabelSame: 'pergunte (sim ou não)',
     tLabel: 'sua teoria: o que aconteceu?',
     send: 'enviar',
     rank: 'ranking',
@@ -91,6 +93,7 @@ const T = {
     modeQ: '質問',
     modeT: '推理',
     qLabel: '質問（はい／いいえ、ポルトガル語で）',
+    qLabelSame: '質問（はい／いいえ）',
     tLabel: 'あなたの推理：何が起きた？',
     send: '送信',
     rank: 'ランキング',
@@ -127,7 +130,9 @@ function mins(s: number): string {
 }
 
 // ---------- respostas da API (só os campos usados) ----------
-interface Hoje { dia: string; titulo: string; situacao: string; max_perguntas: number; max_teorias: number; total_essenciais: number }
+type Idioma = 'pt' | 'en' | 'ja';
+const HTML_LANG: Record<Idioma, string> = { pt: 'pt-BR', en: 'en', ja: 'ja' };
+interface Hoje { dia: string; idioma: Idioma; titulo: string; situacao: string; max_perguntas: number; max_teorias: number; total_essenciais: number }
 interface Pedido {
   id: string;
   estado: 'fila' | 'rodando' | 'pronto' | 'erro';
@@ -142,6 +147,7 @@ type Resultado =
 interface Sessao {
   apelido: string;
   dia: string;
+  idioma: Idioma;
   estado: 'jogando' | 'resolvido' | 'desistiu' | 'esgotado';
   perguntas: { pergunta: string; resposta: Label }[];
   teorias: { texto: string; resolvido: boolean; essenciais_cobertos: number }[];
@@ -247,13 +253,13 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     intro: q('[data-det-intro]'),
     start: q<HTMLButtonElement>('[data-det-start]'),
     rulesBtn: q<HTMLButtonElement>('[data-det-rules-btn]'),
+    langNote: root.closest('.pane')?.querySelector<HTMLElement>('[data-det-langnote]') ?? null,
   };
   q('[data-det-nick-label]').textContent = `${t.nick}>`;
   q('[data-det-join-btn]').textContent = t.join;
   el.nick.title = t.nickHelp;
   el.modes[0]!.textContent = t.modeQ;
   el.modes[1]!.textContent = t.modeT;
-  el.qLabel.textContent = `${t.qLabel}>`;
   el.tLabel.textContent = `${t.tLabel}>`;
   el.send.textContent = t.send;
   el.rankBtn.textContent = t.rank;
@@ -263,6 +269,15 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
   let token: string | null = null;
   let sessao: Sessao | null = null;
   let mode: 'q' | 't' = 'q';
+  let caseLang: Idioma = 'pt';
+  // o caso pode vir em outro idioma (sem tradução para o dia): marca lang certo e ajusta textos
+  const setCaseLang = (idioma: Idioma) => {
+    caseLang = idioma;
+    const h = HTML_LANG[idioma];
+    for (const n of [el.title, el.situation, el.qInput, el.tInput, el.log, el.reveal]) n.lang = h;
+    el.qLabel.textContent = `${idioma === lang ? t.qLabelSame : t.qLabel}>`;
+    if (el.langNote) el.langNote.hidden = idioma === lang;
+  };
   let busy = false;
 
   const say = (msg: string, kind: '' | 'err' = '') => {
@@ -292,7 +307,7 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     el.log.hidden = false;
     el.log.scrollTop = el.log.scrollHeight;
   };
-  const ansText = (l: Label) => (lang === 'pt' ? l : `${l} · ${t.label[l]}`);
+  const ansText = (l: Label) => (caseLang === lang ? t.label[l] : `${l} · ${t.label[l]}`);
   const logQuestion = (p: string, l: Label) => row('det__row--q', `> ${p}`, ansText(l), l);
   const logTheory = (texto: string, k: number, n: number) => {
     row('det__row--t', `# ${texto}`);
@@ -333,14 +348,14 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     head.textContent = s.dia !== hoje?.dia ? t.end['ontem']! : t.end[s.estado] ?? '';
     const story = document.createElement('p');
     story.className = 'det__story';
-    story.lang = 'pt-BR';
+    story.lang = HTML_LANG[caseLang];
     story.textContent = r.historia;
     const sub = document.createElement('p');
     sub.className = 'muted small';
     sub.textContent = t.points;
     const list = document.createElement('ul');
     list.className = 'det__facts';
-    list.lang = 'pt-BR';
+    list.lang = HTML_LANG[caseLang];
     for (const f of r.fatos.filter((x) => x.essencial)) {
       const li = document.createElement('li');
       li.className = f.acertou ? 'is-hit' : '';
@@ -353,6 +368,7 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
 
   const renderSession = (s: Sessao) => {
     sessao = s;
+    setCaseLang(s.idioma ?? 'pt');
     el.log.replaceChildren();
     for (const p of s.perguntas) logQuestion(p.pergunta, p.resposta);
     for (const th of s.teorias) logTheory(th.texto, th.essenciais_cobertos, s.total_essenciais);
@@ -435,7 +451,7 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     }
     setBusy(true);
     try {
-      const r = await call<{ token: string; dia: string }>('POST', '/sessao', undefined, { apelido: nick });
+      const r = await call<{ token: string; dia: string }>('POST', '/sessao', undefined, { apelido: nick, idioma: hoje.idioma ?? 'pt' });
       token = r.token;
       store.set(r.dia, r.token);
       say('');
@@ -523,11 +539,12 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
   const boot = async () => {
     say(t.loading);
     try {
-      hoje = await call<Hoje>('GET', '/hoje');
+      hoje = await call<Hoje>('GET', `/hoje?idioma=${lang}`);
     } catch (e) {
       say(e instanceof ApiError && e.status === 503 ? t.noCase : errText(e), e instanceof ApiError && e.status === 503 ? '' : 'err');
       return;
     }
+    setCaseLang(hoje.idioma ?? 'pt');
     el.meta.textContent = t.meta(hoje.dia);
     el.title.textContent = hoje.titulo;
     el.situation.textContent = hoje.situacao;

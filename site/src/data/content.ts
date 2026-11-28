@@ -336,12 +336,12 @@ const en: Dict = {
     intro:
       'You get a strange situation. The game master knows the whole story and answers your yes-or-no questions. Find out what happened, send your theory and make the leaderboard.',
     specs: [
-      ['model', 'Llama 3.2 3B + a LoRA I trained on 200 cases'],
+      ['model', 'Llama 3.2 3B + a LoRA I trained on 200 Portuguese cases'],
       ['runs on', '1-core VM, 4-bit, no GPU'],
-      ['accuracy', '96.6% on my eval set'],
+      ['accuracy', '96.6% on my eval set, 97.6% on English cases'],
       ['answer', '~6 s'],
     ],
-    langNote: 'Cases are in Portuguese, so ask in Portuguese.',
+    langNote: "Today's case has no English version yet, so it is in Portuguese. Ask in Portuguese.",
     howTitle: 'how to play',
     steps: [
       'Read the situation: something strange happened.',
@@ -694,12 +694,12 @@ const ja: Dict = {
     intro:
       '奇妙な状況が示されます。ゲームマスターは真相をすべて知っていて、「はい／いいえ」で答えられる質問に答えます。何が起きたのかを突き止め、推理を送って、ランキング入りを目指そう。',
     specs: [
-      ['モデル', '200件の事件で自分で学習させたLoRA付きLlama 3.2 3B'],
+      ['モデル', 'ポルトガル語の事件200件で自分で学習させたLoRA付きLlama 3.2 3B'],
       ['実行環境', '1コアのVM、4ビット、GPUなし'],
-      ['正解率', '自作の評価で96.6%'],
+      ['正解率', '自作の評価で96.6%、日本語の事件で91.1%'],
       ['応答', '約6秒'],
     ],
-    langNote: '事件はポルトガル語です。質問もポルトガル語でどうぞ。',
+    langNote: '今日の事件にはまだ日本語版がないため、ポルトガル語です。質問もポルトガル語でどうぞ。',
     howTitle: '遊び方',
     steps: [
       '状況を読む：何か奇妙なことが起きた。',

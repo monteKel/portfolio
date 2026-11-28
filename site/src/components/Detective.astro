@@ -14,7 +14,7 @@ const tone = ['sim', 'nao', 'irrelevante'];
         <p class="det-feature__badge"><span class="live" aria-hidden="true"></span>{d.badge}</p>
         <p class="det-feature__headline">{d.headline}</p>
         <p class="det-feature__intro">{d.intro}</p>
-        {d.langNote && <p class="small det__lang">{d.langNote}</p>}
+        {d.langNote && <p class="small det__lang" data-det-langnote hidden>{d.langNote}</p>}
         <dl class="det-feature__specs">
           {d.specs.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
         </dl>
