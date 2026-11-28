@@ -548,6 +548,18 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     const s = Math.max(Math.ceil(ms / 1000), 0);
     return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((n) => String(n).padStart(2, '0')).join(':');
   };
+  // reserva, se a API não mandar o tempo: meia-noite de Brasília pelo relógio do visitante
+  const faltaLocal = (): number => {
+    const partes = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'America/Sao_Paulo',
+      hourCycle: 'h23',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }).formatToParts(new Date());
+    const n = (k: string) => Number(partes.find((x) => x.type === k)?.value ?? 0);
+    return 86400 - ((n('hour') % 24) * 3600 + n('minute') * 60 + n('second'));
+  };
   const startClock = (segundos: number) => {
     window.clearInterval(relogio);
     const fim = performance.now() + segundos * 1000;
@@ -588,7 +600,7 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     }
     setCaseLang(hoje.idioma ?? 'pt');
     el.meta.textContent = t.meta(hoje.dia);
-    if (Number.isFinite(hoje.proximo_em_s)) startClock(hoje.proximo_em_s);
+    startClock(Number.isFinite(hoje.proximo_em_s) ? hoje.proximo_em_s : faltaLocal());
     el.title.textContent = hoje.titulo;
     el.situation.textContent = hoje.situacao;
     say('');
