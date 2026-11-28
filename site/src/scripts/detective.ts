@@ -11,6 +11,8 @@ const T = {
     offline: 'the game master is offline right now. try again later.',
     noCase: 'no case today. come back tomorrow.',
     meta: (dia: string) => `case of ${dia}`,
+    next: (c: string) => `next case in ${c}`,
+    newCase: 'new case is up. loading...',
     nick: 'nickname',
     join: 'start',
     nickHelp: 'nickname: 2 to 20 letters, numbers, space, dot, hyphen or _',
@@ -53,6 +55,8 @@ const T = {
     offline: 'o mestre está fora do ar agora. tente mais tarde.',
     noCase: 'sem caso hoje. volte amanhã.',
     meta: (dia: string) => `caso de ${dia.split('-').reverse().join('/')}`,
+    next: (c: string) => `próximo caso em ${c}`,
+    newCase: 'caso novo no ar. carregando...',
     nick: 'apelido',
     join: 'começar',
     nickHelp: 'apelido: 2 a 20 letras, números, espaço, ponto, hífen ou _',
@@ -87,6 +91,8 @@ const T = {
     offline: 'ゲームマスターは現在オフラインです。しばらくしてからお試しください。',
     noCase: '今日の事件はありません。また明日どうぞ。',
     meta: (dia: string) => `${dia} の事件`,
+    next: (c: string) => `次の事件まで ${c}`,
+    newCase: '新しい事件が公開されました。読み込み中...',
     nick: 'ニックネーム',
     join: 'はじめる',
     nickHelp: 'ニックネーム：2〜20文字（英数字・スペース・ピリオド・ハイフン・_）',
@@ -132,7 +138,7 @@ function mins(s: number): string {
 // ---------- respostas da API (só os campos usados) ----------
 type Idioma = 'pt' | 'en' | 'ja';
 const HTML_LANG: Record<Idioma, string> = { pt: 'pt-BR', en: 'en', ja: 'ja' };
-interface Hoje { dia: string; idioma: Idioma; titulo: string; situacao: string; max_perguntas: number; max_teorias: number; total_essenciais: number }
+interface Hoje { dia: string; idioma: Idioma; proximo_em_s: number; titulo: string; situacao: string; max_perguntas: number; max_teorias: number; total_essenciais: number }
 interface Pedido {
   id: string;
   estado: 'fila' | 'rodando' | 'pronto' | 'erro';
@@ -254,6 +260,7 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     start: q<HTMLButtonElement>('[data-det-start]'),
     rulesBtn: q<HTMLButtonElement>('[data-det-rules-btn]'),
     langNote: root.closest('.pane')?.querySelector<HTMLElement>('[data-det-langnote]') ?? null,
+    clock: q('[data-det-clock]'),
   };
   q('[data-det-nick-label]').textContent = `${t.nick}>`;
   q('[data-det-join-btn]').textContent = t.join;
@@ -535,6 +542,41 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     }
   });
 
+  // contador até o caso novo (meia-noite de Brasília, contada pelo servidor; aqui só desconta o tempo)
+  let relogio = 0;
+  const hms = (ms: number) => {
+    const s = Math.max(Math.ceil(ms / 1000), 0);
+    return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((n) => String(n).padStart(2, '0')).join(':');
+  };
+  const startClock = (segundos: number) => {
+    window.clearInterval(relogio);
+    const fim = performance.now() + segundos * 1000;
+    const tick = () => {
+      const falta = fim - performance.now();
+      if (falta > 0) {
+        el.clock.textContent = t.next(hms(falta));
+        return;
+      }
+      window.clearInterval(relogio);
+      el.clock.textContent = t.newCase;
+      // o servidor confere a virada a cada 30 s e ainda aquece o caso: espera um pouco antes de pedir
+      window.setTimeout(() => void restart(), 45_000);
+    };
+    tick();
+    relogio = window.setInterval(tick, 1000);
+  };
+  const restart = async () => {
+    hoje = null;
+    token = null;
+    sessao = null;
+    el.log.replaceChildren();
+    for (const n of [el.log, el.reveal, el.rank, el.join, el.play, el.tools]) n.hidden = true;
+    el.start.hidden = false;
+    el.start.disabled = true;
+    showRules(true);
+    await boot();
+  };
+
   // carrega o caso só quando o painel chega perto da tela: visita que não rola até aqui não chama a VM
   const boot = async () => {
     say(t.loading);
@@ -546,6 +588,7 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     }
     setCaseLang(hoje.idioma ?? 'pt');
     el.meta.textContent = t.meta(hoje.dia);
+    if (Number.isFinite(hoje.proximo_em_s)) startClock(hoje.proximo_em_s);
     el.title.textContent = hoje.titulo;
     el.situation.textContent = hoje.situacao;
     say('');

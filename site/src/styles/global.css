@@ -1465,8 +1465,21 @@ html.lang-ask .gate {
   padding: 1rem 1.5ch 0.75rem;
   border-bottom: 1px solid var(--line);
 }
+.det__top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 2ch;
+  margin-bottom: 0.25rem;
+}
+.det__clock {
+  margin: 0;
+  color: var(--amber);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
 .det__meta {
-  margin: 0 0 0.25rem;
+  margin: 0;
   color: var(--ash);
   font-size: 0.72rem;
 }
