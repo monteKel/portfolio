@@ -41,7 +41,7 @@ export interface Dict {
   meta: { title: string; description: string };
   skip: string;
   tabs: { id: string; label: string }[];
-  hero: { name: string; role: string; lines: string[]; hint: string; cta: string };
+  hero: { name: string; role: string; lines: string[]; hint: string; cta: string; /** chamada para o jogo do detetive */ play: string };
   about: { title: string; lines: string[]; facts: [string, string][]; /** texto alternativo da foto */ portrait: string };
   now: { title: string; items: { tag: string; text: string }[] };
   stack: { title: string; items: string[] };
@@ -60,7 +60,24 @@ export interface Dict {
   research: { title: string; caption: string; note: string; objective: string; step: string };
   play: { title: string; text: string; quick: { cmd: string; label: string }[] };
   /** jogo diário do detetive (casos em português, servidor na VM) */
-  detective: { title: string; intro: string; note: string; langNote: string | null };
+  detective: {
+    title: string;
+    badge: string;
+    headline: string;
+    intro: string;
+    /** ficha técnica do mestre: [rótulo, valor] */
+    specs: [string, string][];
+    langNote: string | null;
+    howTitle: string;
+    steps: string[];
+    answersTitle: string;
+    /** sim, não, irrelevante, nessa ordem, no idioma da página */
+    answers: { label: string; text: string }[];
+    note: string;
+    play: string;
+    resume: string;
+    rules: string;
+  };
   footer: { built: string; privacy: string; rights: string };
   /** nome dos idiomas na barra (aria do grupo) */
   langsLabel: string;
@@ -159,10 +176,10 @@ const en: Dict = {
     { id: 'now', label: 'now' },
     { id: 'stack', label: 'stack' },
     { id: 'contact', label: 'contact' },
+    { id: 'detective', label: 'detective' },
     { id: 'projects', label: 'projects' },
     { id: 'research', label: 'diversity' },
     { id: 'games', label: 'games' },
-    { id: 'detective', label: 'detective' },
   ],
   hero: {
     name: 'Kelve Cartaxo',
@@ -170,6 +187,7 @@ const en: Dict = {
     lines: ['Federal University of Ceará, Brazil, class of 2027', 'open to remote work'],
     hint: 'scroll to fall in',
     cta: 'get in touch',
+    play: "play today's case",
   },
   about: {
     title: 'about',
@@ -312,11 +330,35 @@ const en: Dict = {
     ],
   },
   detective: {
-    title: 'detective, daily case',
+    title: 'detective: daily case',
+    badge: 'live',
+    headline: 'One mystery a day. An AI keeps the secret.',
     intro:
-      'A new mystery every day. You only see the situation; the game master knows the whole story and answers only yes, no or irrelevant. Ask, then send your theory.',
-    note: 'game master: Llama 3.2 3B fine-tuned with LoRA on 200 cases, 4-bit, on a 1-core VM. 96.6% on my eval set, ~6 s per answer.',
+      'You get a strange situation. The game master knows the whole story and answers your yes-or-no questions. Find out what happened, send your theory and make the leaderboard.',
+    specs: [
+      ['model', 'Llama 3.2 3B + a LoRA I trained on 200 cases'],
+      ['runs on', '1-core VM, 4-bit, no GPU'],
+      ['accuracy', '96.6% on my eval set'],
+      ['answer', '~6 s'],
+    ],
     langNote: 'Cases are in Portuguese, so ask in Portuguese.',
+    howTitle: 'how to play',
+    steps: [
+      'Read the situation: something strange happened.',
+      'Ask yes-or-no questions to find out why. Up to 40 a day.',
+      'When you think you know, send your theory. You get 3 tries.',
+      "Cover every key point to solve it and join the day's leaderboard.",
+    ],
+    answersTitle: 'how the game master answers',
+    answers: [
+      { label: 'yes', text: 'the story confirms it.' },
+      { label: 'no', text: 'the story contradicts it, even if only one detail is wrong (place, person, reason).' },
+      { label: 'irrelevant', text: "the story doesn't say, or it isn't a yes-or-no question." },
+    ],
+    note: 'It can only output one of these three words, so asking it for the answer gets you nowhere. It is a small model and can be wrong now and then.',
+    play: 'play',
+    resume: 'continue',
+    rules: 'rules',
   },
   footer: {
     built: 'Built with Astro and GSAP.',
@@ -340,10 +382,10 @@ const pt: Dict = {
     { id: 'now', label: 'agora' },
     { id: 'stack', label: 'stack' },
     { id: 'contact', label: 'contato' },
+    { id: 'detective', label: 'detetive' },
     { id: 'projects', label: 'projetos' },
     { id: 'research', label: 'diversidade' },
     { id: 'games', label: 'jogos' },
-    { id: 'detective', label: 'detetive' },
   ],
   hero: {
     name: 'Kelve Cartaxo',
@@ -351,6 +393,7 @@ const pt: Dict = {
     lines: ['Universidade Federal do Ceará, turma de 2027', 'aberto a trabalho remoto'],
     hint: 'role para cair',
     cta: 'fale comigo',
+    play: 'jogar o caso do dia',
   },
   about: {
     title: 'sobre',
@@ -466,11 +509,35 @@ const pt: Dict = {
     ],
   },
   detective: {
-    title: 'detetive, caso do dia',
+    title: 'detetive: caso do dia',
+    badge: 'ao vivo',
+    headline: 'Um mistério por dia. Uma IA guarda o segredo.',
     intro:
-      'Um mistério novo por dia. Você só vê a situação; o mestre sabe a história inteira e responde apenas sim, não ou irrelevante. Pergunte e depois mande sua teoria.',
-    note: 'mestre: Llama 3.2 3B ajustado com LoRA em 200 casos, 4 bits, numa VM de 1 núcleo. 96,6% no meu avaliador, ~6 s por resposta.',
+      'Você recebe uma situação estranha. O mestre sabe a história inteira e responde suas perguntas de sim ou não. Descubra o que aconteceu, mande sua teoria e entre no ranking.',
+    specs: [
+      ['modelo', 'Llama 3.2 3B + LoRA que treinei em 200 casos'],
+      ['roda em', 'VM de 1 núcleo, 4 bits, sem GPU'],
+      ['acerto', '96,6% no meu avaliador'],
+      ['resposta', '~6 s'],
+    ],
     langNote: null,
+    howTitle: 'como jogar',
+    steps: [
+      'Leia a situação: algo estranho aconteceu.',
+      'Faça perguntas de sim ou não para descobrir o porquê. Até 40 por dia.',
+      'Quando achar que sabe, mande sua teoria. São 3 tentativas.',
+      'Acerte todos os pontos essenciais para resolver e entrar no ranking do dia.',
+    ],
+    answersTitle: 'como o mestre responde',
+    answers: [
+      { label: 'sim', text: 'a história confirma.' },
+      { label: 'não', text: 'a história contradiz, mesmo que só um detalhe esteja errado (lugar, pessoa, motivo).' },
+      { label: 'irrelevante', text: 'a história não fala disso, ou não é uma pergunta de sim ou não.' },
+    ],
+    note: 'Ele só consegue escrever uma dessas três palavras, então não adianta pedir a resposta. É um modelo pequeno e pode errar de vez em quando.',
+    play: 'jogar',
+    resume: 'continuar',
+    rules: 'regras',
   },
   footer: {
     built: 'Feito com Astro e GSAP.',
@@ -494,10 +561,10 @@ const ja: Dict = {
     { id: 'now', label: '現在' },
     { id: 'stack', label: '技術スタック' },
     { id: 'contact', label: '連絡先' },
+    { id: 'detective', label: '探偵' },
     { id: 'projects', label: 'プロジェクト' },
     { id: 'research', label: '最大多様性' },
     { id: 'games', label: 'ゲーム' },
-    { id: 'detective', label: '探偵' },
   ],
   hero: {
     name: 'Kelve Cartaxo',
@@ -505,6 +572,7 @@ const ja: Dict = {
     lines: ['ブラジル・セアラー連邦大学（UFC）、2027年卒業予定', 'リモートの仕事を募集中'],
     hint: 'スクロールして突入',
     cta: 'お問い合わせ',
+    play: '今日の事件をプレイ',
   },
   about: {
     title: '自己紹介',
@@ -573,7 +641,7 @@ const ja: Dict = {
         name: '最大多様性問題 × 機械学習',
         status: '研究',
         tags: ['グラフ', 'ヒューリスティクス', 'Python'],
-        line: '互いに最も離れた要素の組を選ぶ問題。下のブロック6でライブデモが動いています。',
+        line: '互いに最も離れた要素の組を選ぶ問題。下のブロック7でライブデモが動いています。',
       },
       {
         ...en.projects.items[3]!,
@@ -620,11 +688,35 @@ const ja: Dict = {
     ],
   },
   detective: {
-    title: '探偵・今日の事件',
+    title: '探偵：今日の事件',
+    badge: 'ライブ',
+    headline: '毎日ひとつの謎。秘密を知るのはAIだけ。',
     intro:
-      '毎日ひとつ、新しい謎。あなたに見えるのは状況だけです。ゲームマスターは真相をすべて知っていて、「はい」「いいえ」「関係ない」だけで答えます。質問を重ねて、推理を送ってください。',
-    note: 'ゲームマスター：200件の事件でLoRA微調整したLlama 3.2 3B（4ビット）。1コアのVMで動作。自作の評価で正解率96.6%、回答は1回約6秒。',
+      '奇妙な状況が示されます。ゲームマスターは真相をすべて知っていて、「はい／いいえ」で答えられる質問に答えます。何が起きたのかを突き止め、推理を送って、ランキング入りを目指そう。',
+    specs: [
+      ['モデル', '200件の事件で自分で学習させたLoRA付きLlama 3.2 3B'],
+      ['実行環境', '1コアのVM、4ビット、GPUなし'],
+      ['正解率', '自作の評価で96.6%'],
+      ['応答', '約6秒'],
+    ],
     langNote: '事件はポルトガル語です。質問もポルトガル語でどうぞ。',
+    howTitle: '遊び方',
+    steps: [
+      '状況を読む：何か奇妙なことが起きた。',
+      '「はい／いいえ」で答えられる質問で、理由を探る。1日40回まで。',
+      'わかったと思ったら推理を送る。チャンスは3回。',
+      '重要ポイントをすべて当てれば解決。その日のランキングに載ります。',
+    ],
+    answersTitle: 'ゲームマスターの答え方',
+    answers: [
+      { label: 'はい', text: '物語がそれを裏づけている。' },
+      { label: 'いいえ', text: '物語と矛盾している。場所・人物・理由など、ひとつの点が違うだけでも「いいえ」。' },
+      { label: '関係ない', text: '物語に書かれていない、または「はい／いいえ」で答えられない質問。' },
+    ],
+    note: 'この3つの言葉しか出力できないので、答えを聞き出そうとしても無駄です。小さなモデルなので、ときどき間違えることもあります。',
+    play: 'プレイ',
+    resume: '続ける',
+    rules: 'ルール',
   },
   footer: {
     built: 'Astro と GSAP で制作。',

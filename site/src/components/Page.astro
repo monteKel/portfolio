@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Hero from './Hero.astro';
+import Detective from './Detective.astro';
 import Projects from './Projects.astro';
 import Lab from './Lab.astro';
 import StatusBar from './StatusBar.astro';
@@ -17,6 +18,7 @@ const t = content[lang];
   <div class="bh" aria-hidden="true"><canvas id="bh"></canvas></div>
   <main id="main">
     <Hero t={t} />
+    <Detective t={t} />
     <Projects t={t} />
     <Lab t={t} />
   </main>

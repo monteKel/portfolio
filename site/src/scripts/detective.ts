@@ -244,6 +244,9 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     quit: q<HTMLButtonElement>('[data-det-quit]'),
     reveal: q('[data-det-reveal]'),
     rank: q('[data-det-rank]'),
+    intro: q('[data-det-intro]'),
+    start: q<HTMLButtonElement>('[data-det-start]'),
+    rulesBtn: q<HTMLButtonElement>('[data-det-rules-btn]'),
   };
   q('[data-det-nick-label]').textContent = `${t.nick}>`;
   q('[data-det-join-btn]').textContent = t.join;
@@ -354,6 +357,7 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     for (const p of s.perguntas) logQuestion(p.pergunta, p.resposta);
     for (const th of s.teorias) logTheory(th.texto, th.essenciais_cobertos, s.total_essenciais);
     const playing = s.estado === 'jogando' && s.dia === hoje?.dia;
+    showRules(false);
     el.join.hidden = true;
     el.play.hidden = !playing;
     el.tools.hidden = false;
@@ -362,11 +366,24 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     if (!playing) renderReveal(s);
   };
 
+  // tela de regras: aparece antes de jogar; no jogo, abre e fecha pelo botão "regras"
+  const showRules = (show: boolean) => {
+    el.intro.hidden = !show;
+    el.rulesBtn.setAttribute('aria-expanded', String(show));
+  };
   const showJoin = () => {
+    showRules(false);
     el.join.hidden = false;
     el.play.hidden = true;
     el.tools.hidden = true;
+    el.nick.focus();
   };
+  el.start.addEventListener('click', () => {
+    if (!hoje) return;
+    el.start.hidden = true;
+    showJoin();
+  });
+  el.rulesBtn.addEventListener('click', () => showRules(el.intro.hidden !== false));
 
   const refresh = async () => {
     if (!token) return;
@@ -516,15 +533,16 @@ export function mountDetective(root: HTMLElement, lang: Lang): void {
     el.situation.textContent = hoje.situacao;
     say('');
     token = store.get(hoje.dia);
-    if (!token) return showJoin();
+    el.start.disabled = false;
+    if (!token) return;
     try {
       await refresh();
+      el.start.hidden = true;
       if (sessao?.pedido) void follow(sessao.pedido);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) {
         store.drop(hoje.dia);
         token = null;
-        showJoin();
       } else say(errText(e), 'err');
     }
   };

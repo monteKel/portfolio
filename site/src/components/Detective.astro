@@ -1,0 +1,70 @@
+---
+// Jogo do detetive em destaque, logo depois da primeira tela. A parte viva fica em scripts/detective.ts.
+import type { Dict } from '../data/content';
+import Pane from './Pane.astro';
+interface Props { t: Dict }
+const { t } = Astro.props;
+const d = t.detective;
+const tone = ['sim', 'nao', 'irrelevante'];
+---
+<section class="sec sec--det" aria-label={d.title}>
+  <Pane id="detective" title={d.title} index={5} class="pane--detective">
+    <div class="det-feature">
+      <div class="det-feature__about">
+        <p class="det-feature__badge"><span class="live" aria-hidden="true"></span>{d.badge}</p>
+        <p class="det-feature__headline">{d.headline}</p>
+        <p class="det-feature__intro">{d.intro}</p>
+        {d.langNote && <p class="small det__lang">{d.langNote}</p>}
+        <dl class="det-feature__specs">
+          {d.specs.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+        </dl>
+      </div>
+
+      <div class="det" data-det>
+        <div class="det__case">
+          <p class="det__meta" data-det-meta aria-live="polite"></p>
+          <h3 class="det__title" data-det-title lang="pt-BR"></h3>
+          <p class="det__situation" data-det-situation lang="pt-BR"></p>
+        </div>
+        <div class="det__intro" data-det-intro>
+          <p class="det__h">{d.howTitle}</p>
+          <ol class="det__steps">
+            {d.steps.map((s) => <li>{s}</li>)}
+          </ol>
+          <p class="det__h">{d.answersTitle}</p>
+          <ul class="det__answers">
+            {d.answers.map((a, i) => <li><span class={`det__ans det__ans--${tone[i]}`}>{a.label}</span> {a.text}</li>)}
+          </ul>
+          <p class="det__note">{d.note}</p>
+          <button type="button" class="btn btn--primary det__start" data-det-start data-resume={d.resume} disabled>{d.play}</button>
+        </div>
+        <div class="det__log" data-det-log role="log" aria-live="polite" data-lenis-prevent hidden></div>
+        <p class="det__status" data-det-status role="status"></p>
+        <form class="det__form" data-det-join action="#" autocomplete="off" hidden>
+          <label for="det-nick" data-det-nick-label></label>
+          <input id="det-nick" data-det-nick type="text" minlength="2" maxlength="20" spellcheck="false" autocapitalize="off" enterkeyhint="go" />
+          <button type="submit" class="btn btn--primary" data-det-join-btn></button>
+        </form>
+        <form class="det__form det__form--play" data-det-play action="#" autocomplete="off" hidden>
+          <div class="det__modes" role="group" data-det-modes>
+            <button type="button" class="btn" data-det-mode="q" aria-pressed="true"></button>
+            <button type="button" class="btn" data-det-mode="t" aria-pressed="false"></button>
+          </div>
+          <label for="det-q" data-det-q-label></label>
+          <input id="det-q" data-det-q type="text" maxlength="200" spellcheck="false" lang="pt-BR" enterkeyhint="send" />
+          <label for="det-t" data-det-t-label hidden></label>
+          <textarea id="det-t" data-det-t maxlength="800" rows="4" spellcheck="false" lang="pt-BR" hidden></textarea>
+          <button type="submit" class="btn btn--primary" data-det-send></button>
+        </form>
+        <div class="det__tools" data-det-tools hidden>
+          <span class="det__count" data-det-count></span>
+          <button type="button" class="btn" data-det-rules-btn aria-expanded="false">{d.rules}</button>
+          <button type="button" class="btn" data-det-rank-btn></button>
+          <button type="button" class="btn" data-det-quit></button>
+        </div>
+        <div class="det__reveal" data-det-reveal hidden></div>
+        <div class="det__rank" data-det-rank hidden></div>
+      </div>
+    </div>
+  </Pane>
+</section>

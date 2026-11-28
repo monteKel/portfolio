@@ -4,11 +4,10 @@ import Pane from './Pane.astro';
 interface Props { t: Dict }
 const { t } = Astro.props;
 const r = t.research;
-const d = t.detective;
 ---
 <section class="sec" id="lab" aria-label="lab">
   <div class="panes panes--lab">
-    <Pane id="research" title={r.title} index={6} class="pane--research">
+    <Pane id="research" title={r.title} index={7} class="pane--research">
       <div data-mdp>
         <p class="muted small">{r.caption}</p>
         <div class="mdp__field" role="img" aria-label={r.title}>
@@ -22,7 +21,7 @@ const d = t.detective;
       </div>
     </Pane>
 
-    <Pane id="games" title={t.play.title} index={7} class="pane--games">
+    <Pane id="games" title={t.play.title} index={8} class="pane--games">
       <p class="muted small">{t.play.text}</p>
       <div class="term" data-term>
         <div class="term__out" data-term-out role="log" aria-live="polite" data-lenis-prevent></div>
@@ -38,42 +37,5 @@ const d = t.detective;
       </div>
     </Pane>
 
-    <Pane id="detective" title={d.title} index={8} class="pane--detective">
-      <p class="muted small det__intro">{d.intro}</p>
-      {d.langNote && <p class="small det__lang">{d.langNote}</p>}
-      <p class="note">{d.note}</p>
-      <div class="det" data-det>
-        <div class="det__case">
-          <p class="det__meta" data-det-meta aria-live="polite"></p>
-          <h3 class="det__title" data-det-title lang="pt-BR"></h3>
-          <p class="det__situation" data-det-situation lang="pt-BR"></p>
-        </div>
-        <div class="det__log" data-det-log role="log" aria-live="polite" data-lenis-prevent hidden></div>
-        <p class="det__status" data-det-status role="status"></p>
-        <form class="det__form" data-det-join action="#" autocomplete="off" hidden>
-          <label for="det-nick" data-det-nick-label></label>
-          <input id="det-nick" data-det-nick type="text" minlength="2" maxlength="20" spellcheck="false" autocapitalize="off" enterkeyhint="go" />
-          <button type="submit" class="btn btn--primary" data-det-join-btn></button>
-        </form>
-        <form class="det__form det__form--play" data-det-play action="#" autocomplete="off" hidden>
-          <div class="det__modes" role="group" data-det-modes>
-            <button type="button" class="btn" data-det-mode="q" aria-pressed="true"></button>
-            <button type="button" class="btn" data-det-mode="t" aria-pressed="false"></button>
-          </div>
-          <label for="det-q" data-det-q-label></label>
-          <input id="det-q" data-det-q type="text" maxlength="200" spellcheck="false" lang="pt-BR" enterkeyhint="send" />
-          <label for="det-t" data-det-t-label hidden></label>
-          <textarea id="det-t" data-det-t maxlength="800" rows="4" spellcheck="false" lang="pt-BR" hidden></textarea>
-          <button type="submit" class="btn btn--primary" data-det-send></button>
-        </form>
-        <div class="det__tools" data-det-tools hidden>
-          <span class="det__count" data-det-count></span>
-          <button type="button" class="btn" data-det-rank-btn></button>
-          <button type="button" class="btn" data-det-quit></button>
-        </div>
-        <div class="det__reveal" data-det-reveal hidden></div>
-        <div class="det__rank" data-det-rank hidden></div>
-      </div>
-    </Pane>
   </div>
 </section>
